@@ -2,6 +2,7 @@ extends KinematicBody
 
 ### import the input helper class
 var input_states = preload("input_states.gd")
+var buff_area_types = preload("buff_area_type.gd").new()
 
 ### create input states classes
 var state_up    = input_states.new("up")
@@ -17,8 +18,9 @@ var btn_right   = null
 
 var btn_x       = null
 
-var move_vector         = Vector3( 0, 0 ,0 )
+var is_in_buff_area = buff_area_types.NONE
 
+var move_vector         = Vector3( 0, 0 ,0 )
 var orientation         = 0
 
 
@@ -27,8 +29,6 @@ func _fixed_process(delta):
 	process_input()
 	get_node("sprite").set_flip_h(orientation)
 	self.move( move_vector )
-	
-	print(get_collider())
 
 func process_input():
 
@@ -60,4 +60,8 @@ func process_input():
 func _ready():
 	set_fixed_process(true)
 	set_process_input(true)
+	pass
+
+func set_is_in_buff_area(buff_area_type):
+	is_in_buff_area = buff_area_type
 	pass
