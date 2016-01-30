@@ -21,6 +21,11 @@ var buff_area_prototype = preload("res://scenes/arena.scn")
 var buff_area_types = preload("buff_area_type.gd").new()
 var buff_areas_node = null
 
+var kameha_prototype = preload("res://scenes/kameha.scn")
+var shell_prototype = preload("res://scenes/shell.scn")
+var shell_node = null
+#var buff_areas_node = null
+
 var btn_up      = null
 var btn_down    = null
 var btn_left    = null
@@ -83,15 +88,18 @@ func process_input():
 		create_bullet()
 	
 	if (btn_3 == 1):
-		create_buff_area(3)
+#		create_buff_area(3)
+		create_kameha()
 	
 func _ready():
 	set_fixed_process(true)
 	set_process_input(true)
-	bullets_node = get_node("../bullets")
+	
+	shell_node      = get_node("../shells")
+	bullets_node    = get_node("../bullets")
 	buff_areas_node = get_node("../buff_areas")
-	sprite_idle = get_node("sprite_idle")
-	sprite_jump = get_node("sprite_jump")
+	sprite_idle     = get_node("sprite_idle")
+	sprite_jump     = get_node("sprite_jump")
 	pass
 
 func set_is_in_buff_area(buff_area_type):
@@ -100,6 +108,12 @@ func set_is_in_buff_area(buff_area_type):
 	
 func create_bullet():
 	var bullet = bullet_prototype.instance()
+	var shell = shell_prototype.instance()
+	
+	shell.set_angular_velocity(Vector3(rand_range(-0.1,0.1),rand_range(-0.1,0.1),rand_range(-0.1,0.1)))
+	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
+	shell.set_translation(self.get_translation() + Vector3(-5*orientation, 10+rand_range(-1,1), 0))
+	shell_node.add_child(shell)
 	bullet.set_translation(self.get_translation() + Vector3(0, 10, 0))
 	var bullet_velocity_x = 0
 	if orientation == 0:
@@ -116,5 +130,22 @@ func create_buff_area(buff_area_type):
 	var buff_area = buff_area_prototype.instance()
 	buff_area.set_translation(self.get_translation())
 	buff_areas_node.add_child(buff_area)
+	pass
+	
+func create_kameha():
+	var kameha = kameha_prototype.instance()
+	kameha.set_translation(self.get_translation() + Vector3(0, 10, 0))
+	var velocity_x = 0
+	if orientation == 0:
+		velocity_x = .8
+	else:
+		velocity_x = -.8
+		
+	kameha.velocity = Vector3(velocity_x, 0, 0)
+	kameha.set_orientation( orientation )
+#	kameha.get_node("anim_sprite").set_flip_h(orientation)
+#	if orientation == 1:
+#		scale.x = scale.x * -1
+	bullets_node.add_child(kameha)
 	pass
 	

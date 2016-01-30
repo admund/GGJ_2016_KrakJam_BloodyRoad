@@ -1,12 +1,13 @@
 ### class for enemy states
 
 var idle      = 0
-var attack    = 1
-var chase     = 2
-var run       = 3
-var jump      = 4
-var hit       = 5
-var falling   = 6
-var on_ground = 7
+var walk      = 1
+var attack    = 2
+var chase     = 3
+var run       = 4
+var jump      = 5
+var hit       = 6
+var falling   = 7
+var on_ground = 8
 var die       = 10
 var delete    = 11

@@ -10,5 +10,8 @@ func _ready():
 func _fixed_process(delta):
 	timeout += delta
 	if (timeout>2):
-		queue_free()
-	set_translation( get_translation() + velocity )
+		delete()
+	move( velocity )
+
+func delete():
+	queue_free()

@@ -5,14 +5,17 @@ var bulletObject        = preload("res://scenes/bullet.scn")
 var bg_sprite1 = null 
 var bg_sprite2 = null
 var player = null
+var camera_target_position = Vector3(0,0,0)
 
 func _fixed_process(delta):
 	
 	var player_pos = player.get_translation()
+	camera_target_position = player_pos - Vector3(player.orientation*20-10,0,0) 
 	var bg_pos1 = bg_sprite1.get_translation()
 	var bg_pos2 = bg_sprite2.get_translation()
-	var camera_pos = get_node("Camera").get_translation()
-	camera_pos.x = player_pos.x
+	var camera_pos = get_node("Camera").get_translation() 
+	camera_pos.x += ( camera_target_position.x - camera_pos.x )/10
+#	camera_pos.x = player_pos.x
 	get_node("Camera").set_translation(camera_pos)
 	
 	if ( player_pos.x > bg_pos1.x ):
