@@ -13,6 +13,7 @@ var state_up    = input_states.new("up")
 var state_down  = input_states.new("down")
 var state_left  = input_states.new("left")
 var state_right = input_states.new("right")
+var state_jump = input_states.new("jump")
 var state_x     = input_states.new("x")
 var state_1     = input_states.new("1")
 var state_2     = input_states.new("2")
@@ -35,7 +36,7 @@ var btn_up      = null
 var btn_down    = null
 var btn_left    = null
 var btn_right   = null
-
+var btn_jump   = null
 var btn_x       = null
 var btn_1       = null
 var btn_2       = null
@@ -43,6 +44,7 @@ var btn_3       = null
 
 var is_in_buff_area = buff_area_types.NONE
 
+var player_jump_hight = 1.2
 var player_top_speed_vert = .3;
 var player_top_speed_hori = .6;
 var move_vector         = Vector3( 0, 0 ,0 )
@@ -57,6 +59,7 @@ var sprite_jump = null
 var sprite_casting = null
 
 # timeouts
+var jump_timeout = -1
 var buff_area_timeout = -1
 var bullet_timeout = -1
 var kameha_timeout = -1
@@ -65,10 +68,16 @@ var throw_cast_timeout = -1
 func _fixed_process(delta):
 	process_input()
 	decrese_timeouts(delta)
-	get_node("sprite_idle").set_flip_h(orientation)
-	get_node("sprite_jump").set_flip_h(orientation)
-	
-	if(throw_cast_timeout < 0):
+	sprite_idle.set_flip_h(orientation)
+	sprite_running.set_flip_h(orientation)
+	sprite_jump.set_flip_h(orientation)
+	sprite_casting.set_flip_h(orientation)
+
+	# powrot do "trans.y = 0" po skakaniu
+	if(current_state != STATE_JUMP && get_translation().y != 0 ):
+		var trans = get_translation()
+		set_translation(Vector3(trans.x, 0, trans.z))
+	elif(throw_cast_timeout < 0):
 		self.move( move_vector )
 
 func process_input():
@@ -76,6 +85,7 @@ func process_input():
 	btn_down  = state_down.check()
 	btn_left  = state_left.check()
 	btn_right = state_right.check()
+	btn_jump  = state_jump.check()
 	btn_x =     state_x.check()
 	btn_1 =     state_1.check()
 	btn_2 =     state_2.check()
@@ -100,6 +110,14 @@ func process_input():
 		move_vector = Vector3( player_top_speed_hori,0 , move_vector.z )
 		orientation = 0
 		move = true
+		
+	if(btn_jump == 1 && (current_state == STATE_RUNNING || current_state == STATE_IDLE)):
+		change_state(STATE_JUMP)
+		jump_timeout = 1
+		
+		
+	if(current_state == STATE_JUMP):
+		move_vector = Vector3(move_vector.x, cos((1 - jump_timeout) * PI) * player_jump_hight, move_vector.z)
 		
 	if (current_state == STATE_RUNNING || current_state == STATE_IDLE):
 		if (move):
@@ -136,7 +154,12 @@ func decrese_timeouts(delta):
 		throw_cast_timeout -= delta
 		if(throw_cast_timeout < 0):
 			change_state(STATE_IDLE)
-		
+			
+	if(jump_timeout > 0):
+		jump_timeout -= delta
+		if(jump_timeout < 0):
+			change_state(STATE_IDLE)
+				
 	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
 		print(kameha_timeout)
 		kameha_timeout -= delta
