@@ -1,7 +1,7 @@
 
-extends Node2D
+extends KinematicBody
 
-var velocity = Vector2(0,0)
+var velocity = Vector3(0,0,0)
 var timeout = 0 
 
 func _ready():
@@ -11,6 +11,4 @@ func _fixed_process(delta):
 	timeout += delta
 	if (timeout>2):
 		queue_free()
-	set_pos( get_pos() + velocity )
-
-
+	set_translation( get_translation() + velocity )
