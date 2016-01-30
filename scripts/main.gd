@@ -1,7 +1,7 @@
-
 extends Spatial
 
 var bulletObject        = preload("res://scenes/bullet.scn")
+var enemy_prototype        = preload("res://scenes/enemy.scn")
 var bg_sprite1 = null 
 var bg_sprite2 = null
 var player = null
@@ -38,5 +38,14 @@ func _ready():
 	bg_sprite1 = get_node("background/sprite")
 	bg_sprite2 = get_node("background/sprite1")
 	player = get_node("Player")
+	
+	spawne_enemy()
 	pass
 
+func spawne_enemy():
+	var enemies = get_node("enemies")
+	for i in range(0,3):
+		var enemy = enemy_prototype.instance()
+		enemy.set_translation(player.get_translation() + Vector3(rand_range(-50, -50), 0, rand_range(-5, -5)))
+		enemies.add_child(enemy)
+		

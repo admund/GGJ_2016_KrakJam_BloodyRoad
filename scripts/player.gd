@@ -64,6 +64,8 @@ var sprite_sword_1 = null
 var sprite_sword_2 = null
 var sprite_shadow = null
 
+var player_swor_area = null
+
 # timeouts
 var jump_timeout = -1
 var buff_area_timeout = -1
@@ -75,13 +77,20 @@ var attack_timeout = -1
 func _fixed_process(delta):
 	process_input()
 	decrese_timeouts(delta)
+	
 	sprite_idle.set_flip_h(orientation)
 	sprite_running.set_flip_h(orientation)
 	sprite_jump.set_flip_h(orientation)
 	sprite_casting.set_flip_h(orientation)
 	sprite_sword_1.set_flip_h(orientation)
 	sprite_sword_2.set_flip_h(orientation)
-
+	
+	var trans = player_swor_area.get_translation()
+	if (orientation == 0):
+		player_swor_area.set_translation(Vector3(4, trans.y, trans.z))
+	else:
+		player_swor_area.set_translation(Vector3(-4, trans.y, trans.z))
+	
 	# powrot do "trans.y = 0" po skakaniu
 	if(current_state != STATE_JUMP && get_translation().y != 0 ):
 		var trans = get_translation()
@@ -107,6 +116,8 @@ func _ready():
 	sprite_sword_1  = get_node("sprite_sword_1")
 	sprite_sword_2  = get_node("sprite_sword_2")
 	sprite_shadow  = get_node("shadow")
+	
+	player_swor_area = get_node("player_sword")
 	pass
 
 func process_input():
@@ -115,11 +126,8 @@ func process_input():
 	btn_left  = state_left.check()
 	btn_right = state_right.check()
 	btn_jump  = state_jump.check()
-#	print("aa")
 	btn_shoot = state_shoot.check()
-#	print(btn_shoot)
 	btn_attack = state_attack.check()
-#	print(btn_attack)
 	btn_1 =     state_1.check()
 	btn_2 =     state_2.check()
 	btn_3 =     state_3.check()
@@ -165,20 +173,18 @@ func process_input():
 		change_state(STATE_CASTING)
 	
 	if (btn_2 == 1 && kameha_timeout < 0):
-#		create_buff_area(3)
 		create_kameha()
 		kameha_timeout = 3 #10
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 		
 	if (btn_shoot == 1 && bullet_timeout < 0):
-		print("shoot")
 		create_bullet()
 		bullet_timeout = .5
 		
 	if (btn_attack == 1 && attack_timeout < 0):
-		print("attack")
 		change_state(STATE_ATTACK)
+		try_hit_enemies()
 		attack_timeout = .5
 	
 func decrese_timeouts(delta):
@@ -204,7 +210,6 @@ func decrese_timeouts(delta):
 			change_state(STATE_IDLE)
 				
 	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
-		print(kameha_timeout)
 		kameha_timeout -= delta
 
 func set_is_in_buff_area(buff_area_type):
@@ -248,9 +253,6 @@ func create_kameha():
 		
 	kameha.velocity = Vector3(velocity_x, 0, 0)
 	kameha.set_orientation( orientation )
-#	kameha.get_node("anim_sprite").set_flip_h(orientation)
-#	if orientation == 1:
-#		scale.x = scale.x * -1
 	bullets_node.add_child(kameha)
 	pass
 	
@@ -293,7 +295,6 @@ func change_state(new_state):
 		sprite_running.hide()
 		sprite_jump.hide()
 		sprite_casting.hide()
-		print(randi() % 2)
 		if(randi() % 2 == 0):
 			sprite_sword_1.show()
 			sprite_sword_2.hide()
@@ -301,3 +302,23 @@ func change_state(new_state):
 			sprite_sword_1.hide()
 			sprite_sword_2.show()
 		
+
+func _on_player_sword_area_enter( area ):
+	if (area.get_name() == "area_enemy"):
+		var node = area.get_node("../")
+		node.in_sword_range = true
+	pass
+
+
+func _on_player_sword_area_exit( area ):
+	if (area.get_name() == "area_enemy"):
+		var node = area.get_node("../")
+		node.in_sword_range = false
+	pass
+	
+func try_hit_enemies():
+	var enemies_node = get_node("../enemies")
+	for child in enemies_node.get_children():
+		child.sword_hit()
+		
+	pass
