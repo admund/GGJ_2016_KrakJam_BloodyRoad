@@ -196,7 +196,7 @@ func process_input():
 		change_state(STATE_CASTING)
 	
 	if (btn_3 == 1 && can_spell(3)):
-#		TODO
+		create_hand()
 #		change_state(STATE_CASTING)
 		pass
 	
@@ -307,7 +307,8 @@ func get_random_enemies():
 
 func create_buff_area(buff_area_type):
 	var buff_area = buff_area_prototype.instance()
-	buff_area.set_translation(self.get_translation() + Vector3(0, 10,0))
+	buff_area.type = 0
+	buff_area.set_translation(self.get_translation() + Vector3(0, 0, -10))
 	buff_areas_node.add_child(buff_area)
 	pass
 	
@@ -323,6 +324,23 @@ func create_kameha():
 	kameha.velocity = Vector3(velocity_x, 0, 0)
 	kameha.set_orientation( orientation )
 	bullets_node.add_child(kameha)
+	pass
+	
+func create_hand():
+	for x in range(0, 3):
+		var enemies = get_node("../enemies")
+		if(enemies.get_child_count() <= x):
+			break
+		
+		var enemy = enemies.get_child(x)
+		enemy.next_state = 12 # freeze
+		
+		var hand = buff_area_prototype.instance()
+		hand.type = 1
+		hand.enemy = enemy
+		hand.set_translation(enemy.get_translation() + Vector3(0, 0, 5))
+		buff_areas_node.add_child(hand)
+		get_parent().add_blood_particle(enemy.get_translation())
 	pass
 	
 func change_state(new_state):

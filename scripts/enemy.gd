@@ -66,6 +66,8 @@ func _fixed_process(delta):
 		die( delta )
 	elif ( current_state == states.delete ):
 		delete( delta )
+	elif ( current_state == states.freeze ):
+		freeze( delta )
 	
 	self.move( move_vector+hit_vector )
 	hit_vector *=0.9
@@ -281,6 +283,10 @@ func delete ( delta ):
 	label.set_text("delete")
 	pass
 	
+func freeze ( delta ):
+	label.set_text("freeze")
+	pass
+	
 func _on_Area_body_enter( body ):
 #	hit_vector = Vector3()
 	if (body.get_name()=="bullet"):
@@ -293,5 +299,8 @@ func _on_Area_body_enter( body ):
 		hp-=50
 		hit(body.get_translation())
 
+	pass
 
+func blow():
+	# TODO tu zrobic rozpierdol :)
 	pass

@@ -11,3 +11,4 @@ var falling   = 7
 var on_ground = 8
 var die       = 10
 var delete    = 11
+var freeze    = 12
