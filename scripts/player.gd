@@ -44,7 +44,7 @@ var btn_3       = null
 
 var is_in_buff_area = buff_area_types.NONE
 
-var player_jump_hight = 1.2
+var player_jump_hight = .7
 var player_top_speed_vert = .3;
 var player_top_speed_hori = .6;
 var move_vector         = Vector3( 0, 0 ,0 )
@@ -57,6 +57,7 @@ var sprite_idle = null
 var sprite_running = null
 var sprite_jump = null
 var sprite_casting = null
+var sprite_shadow = null
 
 # timeouts
 var jump_timeout = -1
@@ -79,6 +80,9 @@ func _fixed_process(delta):
 		set_translation(Vector3(trans.x, 0, trans.z))
 	elif(throw_cast_timeout < 0):
 		self.move( move_vector )
+		if (current_state == STATE_JUMP):
+			var trans = sprite_shadow.get_translation()
+			sprite_shadow.set_translation(Vector3(trans.x, -get_translation().y, trans.z))
 
 func process_input():
 	btn_up    = state_up.check()
@@ -176,6 +180,7 @@ func _ready():
 	sprite_jump     = get_node("sprite_jump")
 	sprite_running  = get_node("sprite_running")
 	sprite_casting  = get_node("sprite_casting")
+	sprite_shadow  = get_node("shadow")
 	pass
 
 func set_is_in_buff_area(buff_area_type):
