@@ -73,7 +73,13 @@ var kameha_timeout = -1
 var throw_cast_timeout = -1
 var bullet_timeout = -1
 var attack_timeout = -1
+var bitting_timeout = -1
 
+# HP
+var current_hp = 1000
+var biting_enemies = 0
+
+# func
 func _fixed_process(delta):
 	process_input()
 	decrese_timeouts(delta)
@@ -100,6 +106,8 @@ func _fixed_process(delta):
 		if (current_state == STATE_JUMP):
 			var trans = sprite_shadow.get_translation()
 			sprite_shadow.set_translation(Vector3(trans.x, -get_translation().y, trans.z))
+
+	biting()
 
 func _ready():
 	set_fixed_process(true)
@@ -211,10 +219,20 @@ func decrese_timeouts(delta):
 				
 	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
 		kameha_timeout -= delta
+		
+	if(bitting_timeout > 0):
+		bitting_timeout -= delta
 
 func set_is_in_buff_area(buff_area_type):
 	is_in_buff_area = buff_area_type
 	pass
+	
+func biting():
+	if (bitting_timeout < 0 && biting_enemies > 0):
+		current_hp -= biting_enemies * 10
+		bitting_timeout = .3
+		# TODO PARTICLE KRWI
+#		print(str("hp ", current_hp))
 	
 func create_bullet():
 	var bullet = bullet_prototype.instance()
@@ -224,7 +242,7 @@ func create_bullet():
 	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
 	shell.set_translation(self.get_translation() + Vector3(-5*orientation, 10+rand_range(-1,1), 0))
 	shell_node.add_child(shell)
-	bullet.set_translation(self.get_translation() + Vector3(0, 10, 0))
+	bullet.set_translation(self.get_translation() + Vector3(0,10,0))
 	var bullet_velocity_x = 0
 	if orientation == 0:
 		bullet_velocity_x = .8
@@ -232,10 +250,17 @@ func create_bullet():
 		bullet_velocity_x = -.8
 	
 	bullet.velocity = Vector3(bullet_velocity_x,0,0)
+	bullet.target = get_random_enemies()
 	bullet.get_node("Sprite3D").set_flip_h(orientation)
 	bullets_node.add_child(bullet)
 	pass
 	
+func get_random_enemies():
+	var enemies = get_node("../enemies")
+	if(enemies.get_child_count() > 0):
+		return enemies.get_child(randi() % enemies.get_child_count())
+	return null
+
 func create_buff_area(buff_area_type):
 	var buff_area = buff_area_prototype.instance()
 	buff_area.set_translation(self.get_translation() + Vector3(0, 10,0))
@@ -322,3 +347,15 @@ func try_hit_enemies():
 		child.sword_hit()
 		
 	pass
+
+
+func _on_player_hit_box_area_enter( area ):
+	if (area.get_name() == "area_enemy"):
+		biting_enemies += 1
+	pass # replace with function body
+
+
+func _on_player_hit_box_area_exit( area ):
+	if (area.get_name() == "area_enemy"):
+		biting_enemies -= 1
+	pass # replace with function body

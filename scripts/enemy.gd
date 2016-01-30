@@ -36,7 +36,6 @@ func _fixed_process(delta):
 		get_node("area_enemy/Sprite").set_flip_h(false)
 		orientation = -1
 
-
 	move_vector = Vector3()
 	if (hp<=0):
 		next_state = states.die
@@ -111,7 +110,7 @@ func idle ( delta ):
 		timer += delta
 		var local_length = (player.get_translation() - self.get_translation()).length()
 		if ( timer >= 1 or local_length<10):
-#			var local_length = (player.get_translation() - self.get_translation()).length()
+			var local_length = (player.get_translation() - self.get_translation()).length()
 			if (local_length<10):
 				next_state = states.attack
 			elif(local_length>=10 and local_length<30):
@@ -122,6 +121,7 @@ func idle ( delta ):
 				next_state = states.run
 	label.set_text("idle")
 	pass
+	
 func walk ( delta ):
 	if (current_state != prev_state):
 		jump_start         = get_translation()
@@ -228,7 +228,6 @@ func jump ( delta ):
 func sword_hit():
 	if (in_sword_range):
 		hp-=20
-		print(str(self, "hit sword"))
 
 func hit ( delta ):
 	hp -=10
@@ -285,7 +284,7 @@ func delete ( delta ):
 	
 func _on_Area_body_enter( body ):
 	hit_vector = Vector3()
-	if (body.get_name()=="bullet"):
+	if (body.get_node("bullet_type") != null):
 		hp-=10
 		hit_vector += body.velocity
 		body.delete()
