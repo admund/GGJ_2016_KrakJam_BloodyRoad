@@ -238,7 +238,7 @@ func create_bullet():
 	
 func create_buff_area(buff_area_type):
 	var buff_area = buff_area_prototype.instance()
-	buff_area.set_translation(self.get_translation())
+	buff_area.set_translation(self.get_translation() + Vector3(0, 10,0))
 	buff_areas_node.add_child(buff_area)
 	pass
 	

@@ -10,6 +10,7 @@ var fade_out_start = false
 func _ready():
 	set_fixed_process(true)
 	player_node = get_node("../../Player")
+	get_node("Sprite3D/Particles").set_emitting(true)
 	pass
 
 func _on_buff_area_body_exit( body ):
