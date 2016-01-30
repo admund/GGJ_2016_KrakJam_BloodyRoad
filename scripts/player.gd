@@ -3,7 +3,8 @@ extends KinematicBody
 var STATE_IDLE = 0
 var STATE_RUNNING = 1
 var STATE_JUMP = 2
-var STATE_CASTING = 3 
+var STATE_CASTING = 3
+var STATE_ATTACK = 4
 
 ### import the input helper class
 var input_states = preload("input_states.gd")
@@ -13,8 +14,9 @@ var state_up    = input_states.new("up")
 var state_down  = input_states.new("down")
 var state_left  = input_states.new("left")
 var state_right = input_states.new("right")
-var state_jump = input_states.new("jump")
-var state_x     = input_states.new("x")
+var state_jump  = input_states.new("jump")
+var state_shoot = input_states.new("shoot")
+var state_attack= input_states.new("attack")
 var state_1     = input_states.new("1")
 var state_2     = input_states.new("2")
 var state_3     = input_states.new("3")
@@ -36,8 +38,9 @@ var btn_up      = null
 var btn_down    = null
 var btn_left    = null
 var btn_right   = null
-var btn_jump   = null
-var btn_x       = null
+var btn_jump    = null
+var btn_attack  = null
+var btn_shoot   = null
 var btn_1       = null
 var btn_2       = null
 var btn_3       = null
@@ -57,14 +60,17 @@ var sprite_idle = null
 var sprite_running = null
 var sprite_jump = null
 var sprite_casting = null
+var sprite_sword_1 = null
+var sprite_sword_2 = null
 var sprite_shadow = null
 
 # timeouts
 var jump_timeout = -1
 var buff_area_timeout = -1
-var bullet_timeout = -1
 var kameha_timeout = -1
 var throw_cast_timeout = -1
+var bullet_timeout = -1
+var attack_timeout = -1
 
 func _fixed_process(delta):
 	process_input()
@@ -73,6 +79,8 @@ func _fixed_process(delta):
 	sprite_running.set_flip_h(orientation)
 	sprite_jump.set_flip_h(orientation)
 	sprite_casting.set_flip_h(orientation)
+	sprite_sword_1.set_flip_h(orientation)
+	sprite_sword_2.set_flip_h(orientation)
 
 	# powrot do "trans.y = 0" po skakaniu
 	if(current_state != STATE_JUMP && get_translation().y != 0 ):
@@ -84,13 +92,34 @@ func _fixed_process(delta):
 			var trans = sprite_shadow.get_translation()
 			sprite_shadow.set_translation(Vector3(trans.x, -get_translation().y, trans.z))
 
+func _ready():
+	set_fixed_process(true)
+	set_process_input(true)
+	
+	shell_node      = get_node("../shells")
+	bullets_node    = get_node("../bullets")
+	buff_areas_node = get_node("../buff_areas")
+	
+	sprite_idle     = get_node("sprite_idle")
+	sprite_jump     = get_node("sprite_jump")
+	sprite_running  = get_node("sprite_running")
+	sprite_casting  = get_node("sprite_casting")
+	sprite_sword_1  = get_node("sprite_sword_1")
+	sprite_sword_2  = get_node("sprite_sword_2")
+	sprite_shadow  = get_node("shadow")
+	pass
+
 func process_input():
 	btn_up    = state_up.check()
 	btn_down  = state_down.check()
 	btn_left  = state_left.check()
 	btn_right = state_right.check()
 	btn_jump  = state_jump.check()
-	btn_x =     state_x.check()
+#	print("aa")
+	btn_shoot = state_shoot.check()
+#	print(btn_shoot)
+	btn_attack = state_attack.check()
+#	print(btn_attack)
 	btn_1 =     state_1.check()
 	btn_2 =     state_2.check()
 	btn_3 =     state_3.check()
@@ -135,17 +164,22 @@ func process_input():
 		throw_cast_timeout = 2.5
 		change_state(STATE_CASTING)
 	
-	if (btn_2 == 1 && bullet_timeout < 0):
-#		create_buff_area(2)
-		create_bullet()
-		bullet_timeout = .5
-	
-	if (btn_3 == 1 && kameha_timeout < 0):
+	if (btn_2 == 1 && kameha_timeout < 0):
 #		create_buff_area(3)
 		create_kameha()
 		kameha_timeout = 3 #10
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
+		
+	if (btn_shoot == 1 && bullet_timeout < 0):
+		print("shoot")
+		create_bullet()
+		bullet_timeout = .5
+		
+	if (btn_attack == 1 && attack_timeout < 0):
+		print("attack")
+		change_state(STATE_ATTACK)
+		attack_timeout = .5
 	
 func decrese_timeouts(delta):
 	if(buff_area_timeout > 0):
@@ -153,6 +187,11 @@ func decrese_timeouts(delta):
 		
 	if(bullet_timeout > 0):
 		bullet_timeout -= delta
+	
+	if(attack_timeout > 0):
+		attack_timeout -= delta
+		if(attack_timeout<0):
+			change_state(STATE_IDLE)
 	
 	if(throw_cast_timeout > 0):
 		throw_cast_timeout -= delta
@@ -167,21 +206,6 @@ func decrese_timeouts(delta):
 	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
 		print(kameha_timeout)
 		kameha_timeout -= delta
-	
-func _ready():
-	set_fixed_process(true)
-	set_process_input(true)
-	
-	shell_node      = get_node("../shells")
-	bullets_node    = get_node("../bullets")
-	buff_areas_node = get_node("../buff_areas")
-	
-	sprite_idle     = get_node("sprite_idle")
-	sprite_jump     = get_node("sprite_jump")
-	sprite_running  = get_node("sprite_running")
-	sprite_casting  = get_node("sprite_casting")
-	sprite_shadow  = get_node("shadow")
-	pass
 
 func set_is_in_buff_area(buff_area_type):
 	is_in_buff_area = buff_area_type
@@ -237,23 +261,43 @@ func change_state(new_state):
 		sprite_running.hide()
 		sprite_jump.hide()
 		sprite_casting.hide()
+		sprite_sword_1.hide()
+		sprite_sword_2.hide()
 		
 	elif(new_state == STATE_RUNNING):
 		sprite_idle.hide()
 		sprite_running.show()
 		sprite_jump.hide()
 		sprite_casting.hide()
+		sprite_sword_1.hide()
+		sprite_sword_2.hide()
 		
 	elif(new_state == STATE_JUMP):
 		sprite_idle.hide()
 		sprite_running.hide()
 		sprite_jump.show()
 		sprite_casting.hide()
+		sprite_sword_1.hide()
+		sprite_sword_2.hide()
 		
 	elif(new_state == STATE_CASTING):
 		sprite_idle.hide()
 		sprite_running.hide()
 		sprite_jump.hide()
 		sprite_casting.show()
+		sprite_sword_1.hide()
+		sprite_sword_2.hide()
 		
+	elif(new_state == STATE_ATTACK):
+		sprite_idle.hide()
+		sprite_running.hide()
+		sprite_jump.hide()
+		sprite_casting.hide()
+		print(randi() % 2)
+		if(randi() % 2 == 0):
+			sprite_sword_1.show()
+			sprite_sword_2.hide()
+		else:
+			sprite_sword_1.hide()
+			sprite_sword_2.show()
 		
