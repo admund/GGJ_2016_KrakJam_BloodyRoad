@@ -33,6 +33,7 @@ func _fixed_process(delta):
 	for i in get_parent().get_parent().get_node("blood").get_children():
 		if ((i.get_translation()-get_translation()).length_squared() < 200):
 			i.queue_free()
+			player_node.add_blood()
 			break
 		
 	if (timeout > 2.5 && !fade_out_start):

@@ -75,9 +75,18 @@ var bullet_timeout = -1
 var attack_timeout = -1
 var bitting_timeout = -1
 
+var spawn_bullet_timeout = -1
+var bullet_to_spawn = 0
+
 # HP
 var current_hp = 1000
 var biting_enemies = 0
+
+# blood
+var blood_level = 0
+var spell_1_cost = 100
+var spell_2_cost = 200
+var spell_3_cost = 400
 
 # func
 func _fixed_process(delta):
@@ -101,13 +110,19 @@ func _fixed_process(delta):
 	if(current_state != STATE_JUMP && get_translation().y != 0 ):
 		var trans = get_translation()
 		set_translation(Vector3(trans.x, 0, trans.z))
-	elif(throw_cast_timeout < 0):
+	
+	elif(throw_cast_timeout < 0 && attack_timeout < 0):
 		self.move( move_vector )
 		if (current_state == STATE_JUMP):
 			var trans = sprite_shadow.get_translation()
 			sprite_shadow.set_translation(Vector3(trans.x, -get_translation().y, trans.z))
 
 	biting()
+	
+	if(bullet_to_spawn > 0 && spawn_bullet_timeout < 0):
+		bullet_to_spawn -= 1
+		create_bullet()
+		spawn_bullet_timeout = .3
 
 func _ready():
 	set_fixed_process(true)
@@ -174,21 +189,28 @@ func process_input():
 		else:
 			change_state(STATE_IDLE)
 		
-	if (btn_1 == 1 && buff_area_timeout < 0):
+	if (btn_shoot == 1 && buff_area_timeout < 0):
 		create_buff_area(1)
 		buff_area_timeout = 4
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 	
-	if (btn_2 == 1 && kameha_timeout < 0):
+	if (btn_3 == 1 && can_spell(3)):
+#		TODO
+#		change_state(STATE_CASTING)
+		pass
+	
+	if (btn_2 == 1 && can_spell(2)):
 		create_kameha()
 		kameha_timeout = 3 #10
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 		
-	if (btn_shoot == 1 && bullet_timeout < 0):
+	if (btn_1 == 1 && can_spell(1)):
+		bullet_to_spawn = 2
 		create_bullet()
-		bullet_timeout = .3
+#		bullet_timeout = .3
+		spawn_bullet_timeout = .3
 		
 	if (btn_attack == 1 && attack_timeout < 0):
 		change_state(STATE_ATTACK)
@@ -201,6 +223,9 @@ func decrese_timeouts(delta):
 		
 	if(bullet_timeout > 0):
 		bullet_timeout -= delta
+		
+	if(spawn_bullet_timeout > 0):
+		spawn_bullet_timeout -= delta
 	
 	if(attack_timeout > 0):
 		attack_timeout -= delta
@@ -231,8 +256,27 @@ func biting():
 	if (bitting_timeout < 0 && biting_enemies > 0):
 		current_hp -= biting_enemies * 10
 		bitting_timeout = .3
-		# TODO PARTICLE KRWI
+		get_parent().add_blood_particle(get_translation())
 #		print(str("hp ", current_hp))
+	
+func add_blood():
+	blood_level += 1
+	print(str("bllod ", blood_level))
+	
+func can_spell(which_spell):
+	if(which_spell == 1 && blood_level >= spell_1_cost):
+		blood_level -= spell_1_cost
+		return true
+		
+	if(which_spell == 2 && blood_level >= spell_2_cost):
+		blood_level -= spell_2_cost
+		return true
+		
+	if(which_spell == 3 && blood_level >= spell_3_cost):
+		blood_level -= spell_3_cost
+		return true
+	
+	return false
 	
 func create_bullet():
 	var bullet = bullet_prototype.instance()
