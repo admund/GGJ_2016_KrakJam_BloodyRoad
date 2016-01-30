@@ -1,5 +1,10 @@
 extends KinematicBody
 
+var STATE_IDLE = 0
+var STATE_RUNNING = 1
+var STATE_JUMP = 2
+var STATE_CASTING = 3 
+
 ### import the input helper class
 var input_states = preload("input_states.gd")
 
@@ -43,14 +48,28 @@ var player_top_speed_hori = .6;
 var move_vector         = Vector3( 0, 0 ,0 )
 var orientation         = 0
 
+# sprites
+var current_state = STATE_IDLE
+
 var sprite_idle = null
+var sprite_running = null
 var sprite_jump = null
+var sprite_casting = null
+
+# timeouts
+var buff_area_timeout = -1
+var bullet_timeout = -1
+var kameha_timeout = -1
+var throw_cast_timeout = -1
 
 func _fixed_process(delta):
 	process_input()
+	decrese_timeouts(delta)
 	get_node("sprite_idle").set_flip_h(orientation)
 	get_node("sprite_jump").set_flip_h(orientation)
-	self.move( move_vector )
+	
+	if(throw_cast_timeout < 0):
+		self.move( move_vector )
 
 func process_input():
 	btn_up    = state_up.check()
@@ -62,34 +81,65 @@ func process_input():
 	btn_2 =     state_2.check()
 	btn_3 =     state_3.check()
 	
+	var move = false
 	move_vector = Vector3( 0, 0, 0 )
 	if( btn_up   > 1 ):
 		move_vector = Vector3(move_vector.x ,0 , -player_top_speed_vert )
+		move = true
 		
 	if( btn_down > 1 ):
 		move_vector = Vector3(move_vector.x ,0 , player_top_speed_vert )
+		move = true
 		
 	if( btn_left  > 1 ):
 		move_vector = Vector3(-player_top_speed_hori ,0 , move_vector.z )
 		orientation = 1
+		move = true
 		
 	if( btn_right > 1 ):
 		move_vector = Vector3( player_top_speed_hori,0 , move_vector.z )
 		orientation = 0
+		move = true
 		
-#	if ( btn_x == 1 ):
-#		create_bullet()
+	if (current_state == STATE_RUNNING || current_state == STATE_IDLE):
+		if (move):
+			change_state(STATE_RUNNING)
+		else:
+			change_state(STATE_IDLE)
 		
-	if (btn_1 == 1):
+	if (btn_1 == 1 && buff_area_timeout < 0):
 		create_buff_area(1)
+		buff_area_timeout = 4
+		throw_cast_timeout = 2.5
+		change_state(STATE_CASTING)
 	
-	if (btn_2 == 1):
+	if (btn_2 == 1 && bullet_timeout < 0):
 #		create_buff_area(2)
 		create_bullet()
+		bullet_timeout = .5
 	
-	if (btn_3 == 1):
+	if (btn_3 == 1 && kameha_timeout < 0):
 #		create_buff_area(3)
 		create_kameha()
+		kameha_timeout = 3 #10
+		throw_cast_timeout = 1.5
+		change_state(STATE_CASTING)
+	
+func decrese_timeouts(delta):
+	if(buff_area_timeout > 0):
+		buff_area_timeout -= delta
+		
+	if(bullet_timeout > 0):
+		bullet_timeout -= delta
+	
+	if(throw_cast_timeout > 0):
+		throw_cast_timeout -= delta
+		if(throw_cast_timeout < 0):
+			change_state(STATE_IDLE)
+		
+	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
+		print(kameha_timeout)
+		kameha_timeout -= delta
 	
 func _ready():
 	set_fixed_process(true)
@@ -98,8 +148,11 @@ func _ready():
 	shell_node      = get_node("../shells")
 	bullets_node    = get_node("../bullets")
 	buff_areas_node = get_node("../buff_areas")
+	
 	sprite_idle     = get_node("sprite_idle")
 	sprite_jump     = get_node("sprite_jump")
+	sprite_running  = get_node("sprite_running")
+	sprite_casting  = get_node("sprite_casting")
 	pass
 
 func set_is_in_buff_area(buff_area_type):
@@ -149,3 +202,30 @@ func create_kameha():
 	bullets_node.add_child(kameha)
 	pass
 	
+func change_state(new_state):
+	current_state = new_state
+	if(new_state == STATE_IDLE):
+		sprite_idle.show()
+		sprite_running.hide()
+		sprite_jump.hide()
+		sprite_casting.hide()
+		
+	elif(new_state == STATE_RUNNING):
+		sprite_idle.hide()
+		sprite_running.show()
+		sprite_jump.hide()
+		sprite_casting.hide()
+		
+	elif(new_state == STATE_JUMP):
+		sprite_idle.hide()
+		sprite_running.hide()
+		sprite_jump.show()
+		sprite_casting.hide()
+		
+	elif(new_state == STATE_CASTING):
+		sprite_idle.hide()
+		sprite_running.hide()
+		sprite_jump.hide()
+		sprite_casting.show()
+		
+		
