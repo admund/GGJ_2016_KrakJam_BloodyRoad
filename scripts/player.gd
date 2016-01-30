@@ -38,14 +38,16 @@ var player_top_speed_hori = .6;
 var move_vector         = Vector3( 0, 0 ,0 )
 var orientation         = 0
 
+var sprite_idle = null
+var sprite_jump = null
+
 func _fixed_process(delta):
-	
 	process_input()
-	get_node("sprite").set_flip_h(orientation)
+	get_node("sprite_idle").set_flip_h(orientation)
+	get_node("sprite_jump").set_flip_h(orientation)
 	self.move( move_vector )
 
 func process_input():
-
 	btn_up    = state_up.check()
 	btn_down  = state_down.check()
 	btn_left  = state_left.check()
@@ -70,14 +72,15 @@ func process_input():
 		move_vector = Vector3( player_top_speed_hori  ,0 , move_vector.z )
 		orientation = 0
 		
-	if ( btn_x == 1 ):
-		create_bullet()
+#	if ( btn_x == 1 ):
+#		create_bullet()
 		
 	if (btn_1 == 1):
 		create_buff_area(1)
 	
 	if (btn_2 == 1):
-		create_buff_area(2)
+#		create_buff_area(2)
+		create_bullet()
 	
 	if (btn_3 == 1):
 		create_buff_area(3)
@@ -87,6 +90,8 @@ func _ready():
 	set_process_input(true)
 	bullets_node = get_node("../bullets")
 	buff_areas_node = get_node("../buff_areas")
+	sprite_idle = get_node("sprite_idle")
+	sprite_jump = get_node("sprite_jump")
 	pass
 
 func set_is_in_buff_area(buff_area_type):
@@ -103,6 +108,7 @@ func create_bullet():
 		bullet_velocity_x = -.8
 	
 	bullet.velocity = Vector3(bullet_velocity_x,0,0)
+	bullet.get_node("Sprite3D").set_flip_h(orientation)
 	bullets_node.add_child(bullet)
 	pass
 	
