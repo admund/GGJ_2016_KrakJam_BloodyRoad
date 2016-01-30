@@ -8,7 +8,7 @@ var anim_sprite = null
 var middle_sprite = null
 var end_sprite = null
 var orientation = 0
-var colider =null
+var colider = null
 
 func _ready():
 	set_fixed_process(true)
@@ -20,11 +20,11 @@ func _ready():
 	end_sprite.set_flip_h(orientation)
 	if(orientation):
 		self.set_translation(get_translation()+Vector3(-4,0,0))
-		colider.set_translation(Vector3(-1.27,0,0))
+		colider.set_translation(Vector3(-0.3,0,0))
 		middle_sprite.set_translation(Vector3(-0.64,0,0))
 	else:
 		self.set_translation(get_translation()+Vector3(4,0,0))
-		colider.set_translation(Vector3(1.27,0,0))
+		colider.set_translation(Vector3(0.3,0,0))
 		middle_sprite.set_translation(Vector3(0.64,0,0))
 		
 func _fixed_process(delta):

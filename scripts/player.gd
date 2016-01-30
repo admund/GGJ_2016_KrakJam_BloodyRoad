@@ -177,7 +177,7 @@ func process_input():
 	if (btn_1 == 1 && buff_area_timeout < 0):
 		create_buff_area(1)
 		buff_area_timeout = 4
-		throw_cast_timeout = 2.5
+		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 	
 	if (btn_2 == 1 && kameha_timeout < 0):
@@ -188,12 +188,12 @@ func process_input():
 		
 	if (btn_shoot == 1 && bullet_timeout < 0):
 		create_bullet()
-		bullet_timeout = .5
+		bullet_timeout = .3
 		
 	if (btn_attack == 1 && attack_timeout < 0):
 		change_state(STATE_ATTACK)
 		try_hit_enemies()
-		attack_timeout = .5
+		attack_timeout = .3
 	
 func decrese_timeouts(delta):
 	if(buff_area_timeout > 0):

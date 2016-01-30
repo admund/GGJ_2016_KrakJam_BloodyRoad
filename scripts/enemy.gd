@@ -36,6 +36,7 @@ func _fixed_process(delta):
 		get_node("area_enemy/Sprite").set_flip_h(false)
 		orientation = -1
 
+
 	move_vector = Vector3()
 	if (hp<=0):
 		next_state = states.die
@@ -67,8 +68,8 @@ func _fixed_process(delta):
 		delete( delta )
 	
 	self.move( move_vector+hit_vector )
-
-	hit_vector = Vector3()
+	hit_vector *=0.9
+#	hit_vector = Vector3()
 	
 	var tex = get_node("area_enemy/Viewport").get_render_target_texture()
 	get_node("area_enemy/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
@@ -110,7 +111,7 @@ func idle ( delta ):
 		timer += delta
 		var local_length = (player.get_translation() - self.get_translation()).length()
 		if ( timer >= 1 or local_length<10):
-			var local_length = (player.get_translation() - self.get_translation()).length()
+#			var local_length = (player.get_translation() - self.get_translation()).length()
 			if (local_length<10):
 				next_state = states.attack
 			elif(local_length>=10 and local_length<30):
@@ -121,7 +122,6 @@ func idle ( delta ):
 				next_state = states.run
 	label.set_text("idle")
 	pass
-	
 func walk ( delta ):
 	if (current_state != prev_state):
 		jump_start         = get_translation()
@@ -228,14 +228,13 @@ func jump ( delta ):
 func sword_hit():
 	if (in_sword_range):
 		hp-=20
+		hit ( player.get_translation())
 
-func hit ( delta ):
-	hp -=10
-	if (hp<=0):
-		next_state = states.die
-	else:
-		next_state = prev_state
-	label.set_text("hit")
+func hit ( hit_location ):
+	get_parent().get_parent().add_blood_particle(get_translation())
+	var local_hit_vector = (hit_location-get_translation())
+#	local_hit_vector.y = 0
+	hit_vector -= local_hit_vector.normalized()*2
 	pass
 	
 func falling ( delta ):
@@ -255,7 +254,7 @@ func die ( delta ):
 
 		jump_start         = get_translation()
 		jump_target        = jump_start 
-		jump_target.x      += orientation * 20
+		jump_target.x      -= orientation * 20
 		
 	timer += delta
 	
@@ -283,13 +282,16 @@ func delete ( delta ):
 	pass
 	
 func _on_Area_body_enter( body ):
-	hit_vector = Vector3()
-	if (body.get_node("bullet_type") != null):
+#	hit_vector = Vector3()
+	if (body.get_name()=="bullet"):
 		hp-=10
-		hit_vector += body.velocity
+#		hit_vector += body.velocity
+		hit(body.get_translation())
 		body.delete()
+
 	if (body.get_name()=="kameha"):
 		hp-=50
-		hit_vector += Vector3(1,0,0)
+		hit(body.get_translation())
+
 
 	pass
