@@ -30,17 +30,6 @@ func _fixed_process(delta):
 	get_node("Camera/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
 	pass
 	
-func generateBullet( bulletPosition, bulletValocity ):
-#	var bullets = get_node("bullets")
-#	
-#	var new_bullet = bulletObject.instance()
-#	new_bullet.set_pos( bulletPosition )
-#	new_bullet.velocity = (bulletValocity + Vector2(rand_range(-0.03,0.03),rand_range(-0.03,0.03))) *10
-#	
-#	bullets.add_child( new_bullet )
-
-	pass
-	
 func _ready():
 	set_fixed_process(true)
 	bg_sprite1 = get_node("background/sprite")

@@ -69,7 +69,7 @@ func process_input():
 		orientation = 1
 		
 	if( btn_right > 1 ):
-		move_vector = Vector3( player_top_speed_hori  ,0 , move_vector.z )
+		move_vector = Vector3( player_top_speed_hori,0 , move_vector.z )
 		orientation = 0
 		
 #	if ( btn_x == 1 ):
@@ -117,5 +117,4 @@ func create_buff_area(buff_area_type):
 	buff_area.set_translation(self.get_translation())
 	buff_areas_node.add_child(buff_area)
 	pass
-	
 	
