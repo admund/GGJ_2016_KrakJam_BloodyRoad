@@ -97,8 +97,8 @@ var biting_enemies = 0
 var current_rounds = 8
 var blood_level = 0
 var spell_1_cost = 0#100
-var spell_2_cost = 0#200
-var spell_3_cost = 0#400
+var spell_2_cost = 40#200
+var spell_3_cost = 60#400
 
 # func
 func _fixed_process(delta):

@@ -275,15 +275,23 @@ func delete ( delta ):
 	
 func _on_Area_body_enter( body ):
 #	hit_vector = Vector3()
-	if (body.get_name()=="bullet"):
+	if (body.has_node("bullet_type")):
 		hp-=10
 #		hit_vector += body.velocity
 		hit(body.get_translation())
 		body.delete()
+		return
+		
+	if (body.has_node("gun_bullet_type")):
+		hp-=5
+#		hit_vector += body.velocity
+		hit(body.get_translation())
+		body.delete()
+		return
 
 	if (body.get_name()=="kameha"):
 		hp-=50
 		hit(body.get_translation())
-
+		return
 
 	pass
