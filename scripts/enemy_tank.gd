@@ -245,11 +245,13 @@ func die ( delta ):
 	pass
 	
 func blow():
-	# ROZPIERDOL
+	is_freeze = false
+	queue_free()
 	pass
 	
 func delete ( delta ):
 	if(!is_freeze):
+		get_parent().get_parent().sum_xp += get_parent().get_parent().tank
 		queue_free()
 	pass
 	

@@ -236,7 +236,8 @@ func sword_hit():
 func hit ( hit_location ):
 	get_parent().get_parent().add_blood_particle(get_translation())
 	var local_hit_vector = (hit_location-get_translation())
-#	local_hit_vector.y = 0
+	local_hit_vector.y = 0
+	local_hit_vector.z = 0
 	hit_vector -= local_hit_vector.normalized()*2
 	pass
 	
@@ -285,6 +286,7 @@ func freeze ( delta ):
 	
 func delete ( delta ):
 	if(!is_freeze):
+		get_parent().get_parent().sum_xp += get_parent().get_parent().hound
 		queue_free()
 	pass
 	
@@ -313,5 +315,6 @@ func _on_Area_body_enter( body ):
 	pass
 
 func blow():
-	# TODO tu zrobic rozpierdol :)
+	is_freeze = false
+	queue_free()
 	pass

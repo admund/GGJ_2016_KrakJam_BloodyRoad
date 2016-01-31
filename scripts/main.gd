@@ -3,7 +3,7 @@ extends Spatial
 var bulletObject        = preload("res://scenes/bullet.scn")
 var enemy_prototype     = preload("res://scenes/enemy.scn")
 var enemy_tank_prototype     = preload("res://scenes/enemy_tank.scn")
-var enemy_hydralish_prototype     = preload("res://scenes/enemy_hydralisk.scn")
+var enemy_hydralisk_prototype     = preload("res://scenes/enemy_hydralisk.scn")
 var blood_splatter_prototype      = preload("res://scenes/blood_splatter.scn")
 var blood_particles_prototype      = preload("res://scenes/blood_particles.scn")
 var bg_sprite1 = null 
@@ -11,7 +11,13 @@ var bg_sprite2 = null
 var player = null
 var camera_target_position = Vector3(0,0,0)
 
-var enemies_counter = 1
+
+var narrator_xp = 4
+var sum_xp = 2
+
+var hound = 1
+var tank  = 5
+var hydralisk = 2
 
 func _fixed_process(delta):
 	
@@ -34,10 +40,11 @@ func _fixed_process(delta):
 	if ( player_pos.x < bg_pos2.x ):
 		bg_sprite2.set_translation( bg_pos2 - Vector3(200,0,0) )
 		
-		
-	if (get_node("enemies").get_child_count() <= enemies_counter):
-		enemies_counter+=1
-		spawne_enemy()
+
+	if (get_node("enemies").get_child_count() == 0):
+		narrator_xp=sum_xp
+		sum_xp=narrator_xp*0.2
+		spawner()
 	
 	get_node("Camera/GUI/hp").set_region_rect(Rect2(Vector2(), Vector2(player.current_hp,11)))
 	
@@ -74,19 +81,25 @@ func _ready():
 	bg_sprite1 = get_node("background/sprite")
 	bg_sprite2 = get_node("background/sprite1")
 	player = get_node("Player")
-	
-	spawne_enemy()
+	randomize()
+#	spawner()
 	pass
 
-func spawne_enemy():
+func spawne_enemy(enemy_type):
+
 	var enemies = get_node("enemies")
-	for i in range(0,enemies_counter):
-#		var enemy = enemy_tank_prototype.instance()
-		var enemy = enemy_hydralish_prototype.instance()
-#		var enemy = enemy_prototype.instance()
-		enemy.set_translation(player.get_translation() + Vector3( sign (rand_range(-1, 1))*70, 0, rand_range(-5, -5)))
-		enemies.add_child(enemy)
+	var enemy = null
+#	for i in range(0,enemies_counter):
+	if (enemy_type == "tank"):
+		enemy = enemy_tank_prototype.instance()
+	elif (enemy_type == "hydralisk"):
+		enemy = enemy_hydralisk_prototype.instance()
+	else:
+		enemy = enemy_prototype.instance()
 		
+	enemy.set_translation(player.get_translation() + Vector3( sign (rand_range(-1, 1))*70, 0, rand_range(-5, -5)))
+	enemies.add_child(enemy)
+
 func add_blood_splatter(pos):
 	var blood = blood_splatter_prototype.instance()
 	blood.set_translation(pos)
@@ -103,3 +116,38 @@ func add_blood_particle(pos):
 		
 func shootGUI():
 	get_node("Camera/GUI/explode/AnimationPlayer").play("shoot")
+	
+func spawner():
+	var localr_nr = round(rand_range(0,2))
+	if (localr_nr == 0):
+		while( narrator_xp >= 1 ):
+			var random_enemy = rand_range(0,10)
+			if (random_enemy < 2 ):
+				spawne_enemy("tank")
+				narrator_xp -=5
+			elif (random_enemy < 5):
+				spawne_enemy("hydralisk")
+				narrator_xp -=2
+			elif (random_enemy <= 10):
+				spawne_enemy("hound")
+				narrator_xp -=1
+
+	elif (localr_nr == 1):
+		while( narrator_xp >= 1 ):
+			var random_enemy = rand_range(0,10)
+			if (random_enemy < 2 ):
+				spawne_enemy("hydralisk")
+				narrator_xp -=2
+			elif (random_enemy <= 10):
+				spawne_enemy("hound")
+				narrator_xp -=1
+	elif (localr_nr == 2):
+		while( narrator_xp >= 1 ):
+			var random_enemy = rand_range(0,10)
+			if (random_enemy < 4 ):
+				spawne_enemy("tank")
+				narrator_xp -=5
+			elif (random_enemy <= 10):
+				spawne_enemy("hound")
+				narrator_xp -=1
+				

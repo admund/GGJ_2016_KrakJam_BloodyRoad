@@ -90,15 +90,15 @@ var spawn_bullet_timeout = -1
 var bullet_to_spawn = 0
 
 # HP
-var current_hp = 1000
+var current_hp = 216
 var biting_enemies = 0
 
 # bloodv
 var current_rounds = 8
 var blood_level = 0
-var spell_1_cost = 0#100
-var spell_2_cost = 40#200
-var spell_3_cost = 60#400
+var spell_1_cost = 10#100
+var spell_2_cost = 15#200
+var spell_3_cost = 30#400
 
 # func
 func _fixed_process(delta):
@@ -304,8 +304,8 @@ func biting():
 #		print(str("hp ", current_hp))
 	
 func add_blood():
-	blood_level += 1
-	print(str("bllod ", blood_level))
+	blood_level += .5
+#	print(str("bllod ", blood_level))
 	
 func can_spell(which_spell):
 	if(which_spell == 1 && blood_level >= spell_1_cost):
@@ -324,12 +324,6 @@ func can_spell(which_spell):
 	
 func create_spermaskull():
 	var bullet = bullet_prototype.instance()
-	
-#	var shell = shell_prototype.instance()
-#	shell.set_angular_velocity(Vector3(rand_range(-0.1,0.1),rand_range(-0.1,0.1),rand_range(-0.1,0.1)))
-#	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
-#	shell.set_translation(self.get_translation() + Vector3(-5*orientation, 10+rand_range(-1,1), 0))
-#	shell_node.add_child(shell)
 	
 	bullet.set_translation(self.get_translation() + Vector3(0,10,0))
 	var bullet_velocity_x = 0
@@ -477,6 +471,7 @@ func change_state(new_state):
 		
 
 func _on_player_sword_area_enter( area ):
+	print("_on_player_sword_area_enter ", area.get_name())
 	if (area.get_name() == "area_enemy"):
 		var node = area.get_node("../")
 		node.in_sword_range = true
@@ -484,6 +479,7 @@ func _on_player_sword_area_enter( area ):
 
 
 func _on_player_sword_area_exit( area ):
+	print("_on_player_sword_area_exit ", area.get_name())
 	if (area.get_name() == "area_enemy"):
 		var node = area.get_node("../")
 		node.in_sword_range = false
