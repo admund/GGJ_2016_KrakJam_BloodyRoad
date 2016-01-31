@@ -217,6 +217,7 @@ func sword_hit(sword_trans):
 		hit ( player.get_translation())
 
 func hit ( hit_location ):
+	get_parent().get_parent().get_node("SamplePlayer").play("hit"+str(round(rand_range(2,3))))
 	get_parent().get_parent().add_blood_particle(get_translation())
 	var local_hit_vector = (hit_location-get_translation())
 	local_hit_vector.y = 0

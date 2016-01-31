@@ -334,8 +334,26 @@ func decrese_timeouts(delta):
 	if(bitting_timeout > 0):
 		bitting_timeout -= delta
 		
+		get_node("sprite_idle").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_jump").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_casting").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_running").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_sword_1").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_sword_2").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_gun").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+		get_node("sprite_gun1").set_opacity(0.5 +fmod(bitting_timeout,0.1)*5 )
+	else:
+		get_node("sprite_idle").set_opacity(1)
+		get_node("sprite_jump").set_opacity(1)
+		get_node("sprite_casting").set_opacity(1)
+		get_node("sprite_running").set_opacity(1)
+		get_node("sprite_sword_1").set_opacity(1)
+		get_node("sprite_sword_2").set_opacity(1)
+		get_node("sprite_gun").set_opacity(1)
+		get_node("sprite_gun1").set_opacity(1)
+		
 	if(reload_timeout > 0 && current_state != STATE_SHOOTING):
-		reload_timeout -= delta
+		reload_timeout -= delta*2
 		if (reload_timeout < 0 && current_rounds < MAX_ROUNDS):
 			current_rounds += 1
 			get_node("SamplePlayer").play("reload")
@@ -349,10 +367,12 @@ func set_is_in_buff_area(buff_area_type):
 	
 func biting():
 	if (bitting_timeout < 0 && biting_enemies > 0):
+#		blinking = true
 		current_hp -= biting_enemies * 5
 		bitting_timeout = .3
 		get_parent().add_blood_particle(get_translation())
-#		print(str("hp ", current_hp))
+#	else:
+#		blinking = true
 	
 func add_blood():
 	blood_level += .5

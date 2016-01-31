@@ -152,10 +152,11 @@ func add_blood_splatter(pos):
 	get_node("blood").add_child(blood)
 	
 	if(player.current_hp > 0):
-		blood_liters += .5
+		blood_liters += .52
 	
 func add_bloow_particles(pos):
 	pos.y+=5
+	get_node("SamplePlayer").play("hit3")
 	for i in range(10):
 		var blood = blood_particles_prototype.instance()
 		blood.set_translation(pos+Vector3(0,1,1))
