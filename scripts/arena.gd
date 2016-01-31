@@ -36,6 +36,10 @@ func _ready():
 		sprite_pentagram.hide()
 		sprite_hand.show()
 		
+	if (enemy != null):
+		enemy.blow()
+		enemy = null
+		
 	pass
 
 func _on_buff_area_body_exit( body ):
@@ -61,10 +65,10 @@ func _fixed_process(delta):
 		if (timeout > 2.5 && !fade_out_start):
 			get_node("pentagram/AnimationPlayer").play("fade_out")
 			fade_out_start = true
-	else:
-		if (timeout > 4):
-			if(enemy != null):
-				enemy.blow()
+#	else:
+#		if (timeout > 4):
+#			if(enemy != null):
+#				enemy.blow()
 		
 	if (timeout > 4):
 		queue_free()

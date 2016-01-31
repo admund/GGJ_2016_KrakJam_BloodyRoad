@@ -11,13 +11,15 @@ var bg_sprite2 = null
 var player = null
 var camera_target_position = Vector3(0,0,0)
 
-
 var narrator_xp = 4
 var sum_xp = 2
 
 var hound = 1
 var tank  = 5
 var hydralisk = 2
+
+func restart():
+	get_parent().restart(self)
 
 func _fixed_process(delta):
 	

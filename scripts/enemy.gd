@@ -5,7 +5,7 @@ var enemy_states = preload("enemy_states.gd")
 var states       = enemy_states.new()
 
 var type         = 0
-var hp           = 100
+var hp           = 40
 var move_vector  = Vector3( 0, 0 ,0 )
 var hit_vector   = Vector3()
 
@@ -228,8 +228,10 @@ func jump ( delta ):
 	label.set_text("jump")
 	pass
 
-func sword_hit():
-	if (in_sword_range):
+func sword_hit(sword_trans):
+	var result = sword_trans - get_translation()
+#	if (in_sword_range):
+	if (result.length() < 10):
 		hp-=20
 		hit ( player.get_translation())
 
@@ -284,6 +286,11 @@ func freeze ( delta ):
 	is_freeze = true
 	pass
 	
+func blow():
+	is_freeze = false
+	delete(1)
+	pass
+	
 func delete ( delta ):
 	if(!is_freeze):
 		get_parent().get_parent().sum_xp += get_parent().get_parent().hound
@@ -312,9 +319,4 @@ func _on_Area_body_enter( body ):
 		hit(body.get_translation())
 		return
 
-	pass
-
-func blow():
-	is_freeze = false
-	queue_free()
 	pass

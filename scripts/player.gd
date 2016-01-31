@@ -24,6 +24,7 @@ var state_penta = input_states.new("penta")
 var state_1     = input_states.new("1")
 var state_2     = input_states.new("2")
 var state_3     = input_states.new("3")
+var state_restart = input_states.new("restart")
 
 ################################3
 var bullet_prototype = preload("res://scenes/bullet.scn")
@@ -52,6 +53,7 @@ var btn_penta   = null
 var btn_1       = null
 var btn_2       = null
 var btn_3       = null
+var btn_restart = null
 
 var is_in_buff_area = buff_area_types.NONE
 
@@ -170,9 +172,17 @@ func process_input():
 	btn_1 =     state_1.check()
 	btn_2 =     state_2.check()
 	btn_3 =     state_3.check()
+	btn_restart = state_restart.check()
 	
 	var move = false
 	move_vector = Vector3( 0, 0, 0 )
+	
+	if (current_hp <= 0):
+		change_state(STATE_IDLE)
+		if(btn_restart == 1):
+			get_parent().restart()
+		return
+		
 	if( btn_up   > 1 ):
 		move_vector = Vector3(move_vector.x ,0 , -player_top_speed_vert )
 		move = true
@@ -199,24 +209,26 @@ func process_input():
 	if(current_state == STATE_JUMP):
 		move_vector = Vector3(move_vector.x, cos((1 - jump_timeout) * PI) * player_jump_hight, move_vector.z)
 		
-	if (current_state == STATE_RUNNING || current_state == STATE_IDLE):
+	if (is_idle_or_running()):
 		if (move):
 			change_state(STATE_RUNNING)
 		else:
 			change_state(STATE_IDLE)
 		
-	if (btn_penta == 1 && buff_area_timeout < 0):
+	if (btn_penta == 1 && buff_area_timeout < 0 && is_idle_or_running()):
 		create_buff_area(1)
 		buff_area_timeout = 4
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 		
-	if (btn_shoot == 1):
+#	if (btn_shoot == 1 && is_idle_or_running()):
+	if (btn_shoot == 1 && is_idle_or_running()):
 		change_state(STATE_START_SHOOTING)
 		sprite_gun.get_node("AnimationPlayer").play("fade_in")
 		gun_timeout = .2
 	
-	if (btn_shoot == 3):
+	if (btn_shoot == 3):# && current_state == STATE_SHOOTING):
+		print(str("state ", current_state))
 		change_state(STATE_END_SHOOTING)
 		sprite_gun.get_node("AnimationPlayer").play("fade_out")
 		gun_timeout = .2
@@ -239,10 +251,13 @@ func process_input():
 		throw_cast_timeout = 1.0
 		change_state(STATE_CASTING)
 		
-	if (btn_attack == 1 && attack_timeout < 0):
+	if (btn_attack == 1 && attack_timeout < 0 && is_idle_or_running()):
 		change_state(STATE_ATTACK)
 		try_hit_enemies()
 		attack_timeout = .3
+	
+func is_idle_or_running():
+	return current_state == STATE_IDLE || current_state == STATE_RUNNING
 	
 func decrese_timeouts(delta):
 	if(buff_area_timeout > 0):
@@ -298,7 +313,7 @@ func set_is_in_buff_area(buff_area_type):
 	
 func biting():
 	if (bitting_timeout < 0 && biting_enemies > 0):
-		current_hp -= biting_enemies * 10
+		current_hp -= biting_enemies * 5
 		bitting_timeout = .3
 		get_parent().add_blood_particle(get_translation())
 #		print(str("hp ", current_hp))
@@ -471,7 +486,6 @@ func change_state(new_state):
 		
 
 func _on_player_sword_area_enter( area ):
-	print("_on_player_sword_area_enter ", area.get_name())
 	if (area.get_name() == "area_enemy"):
 		var node = area.get_node("../")
 		node.in_sword_range = true
@@ -479,7 +493,6 @@ func _on_player_sword_area_enter( area ):
 
 
 func _on_player_sword_area_exit( area ):
-	print("_on_player_sword_area_exit ", area.get_name())
 	if (area.get_name() == "area_enemy"):
 		var node = area.get_node("../")
 		node.in_sword_range = false
@@ -488,7 +501,7 @@ func _on_player_sword_area_exit( area ):
 func try_hit_enemies():
 	var enemies_node = get_node("../enemies")
 	for child in enemies_node.get_children():
-		child.sword_hit()
+		child.sword_hit(get_node("player_sword").get_translation() + get_translation())
 		
 	pass
 
@@ -496,10 +509,10 @@ func try_hit_enemies():
 func _on_player_hit_box_area_enter( area ):
 	if (area.get_name() == "area_enemy"):
 		biting_enemies += 1
-	pass # replace with function body
+	pass
 
 
 func _on_player_hit_box_area_exit( area ):
 	if (area.get_name() == "area_enemy"):
 		biting_enemies -= 1
-	pass # replace with function body
+	pass

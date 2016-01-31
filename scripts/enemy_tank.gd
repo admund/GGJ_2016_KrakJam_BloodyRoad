@@ -200,8 +200,10 @@ func run ( delta ):
 	pass
 	
 
-func sword_hit():
-	if (in_sword_range):
+func sword_hit(sword_trans):
+	var result = sword_trans - get_translation()
+#	if (in_sword_range):
+	if (result.length() < 10):
 		hp-=20
 		hit ( player.get_translation())
 
@@ -246,7 +248,7 @@ func die ( delta ):
 	
 func blow():
 	is_freeze = false
-	queue_free()
+	delete(1)
 	pass
 	
 func delete ( delta ):
