@@ -11,12 +11,18 @@ var bg_sprite2 = null
 var player = null
 var camera_target_position = Vector3(0,0,0)
 
+var blood_liters = 0
+
 var narrator_xp = 4
 var sum_xp = 2
 
 var hound = 1
 var tank  = 5
 var hydralisk = 2
+
+var spell_1_active = null
+var spell_2_active = null
+var spell_3_active = null
 
 func restart():
 	get_parent().restart(self)
@@ -42,7 +48,6 @@ func _fixed_process(delta):
 	if ( player_pos.x < bg_pos2.x ):
 		bg_sprite2.set_translation( bg_pos2 - Vector3(200,0,0) )
 		
-
 	if (get_node("enemies").get_child_count() == 0):
 		narrator_xp=sum_xp
 		sum_xp=narrator_xp*0.2
@@ -51,28 +56,45 @@ func _fixed_process(delta):
 	get_node("Camera/GUI/hp").set_region_rect(Rect2(Vector2(), Vector2(player.current_hp,11)))
 	
 	if (player.blood_level <=10):
-		get_node("Camera/GUI/vial1").set_region_rect(Rect2(Vector2(0, 30-player.blood_level*3), Vector2(12,player.blood_level*3)))
-		get_node("Camera/GUI/vial1").set_offset(Vector2(0, 30-(player.blood_level)*3))
-		get_node("Camera/GUI/vial2").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
-		get_node("Camera/GUI/vial3").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
+		get_node("Camera/GUI/Sprite/vial1").set_region_rect(Rect2(Vector2(0, 30-player.blood_level*3), Vector2(12,player.blood_level*3)))
+		get_node("Camera/GUI/Sprite/vial1").set_offset(Vector2(0, 30-(player.blood_level)*3))
+		get_node("Camera/GUI/Sprite/vial2").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
+		get_node("Camera/GUI/Sprite/vial3").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
 	elif (player.blood_level <=20):
-		get_node("Camera/GUI/vial1").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
-		get_node("Camera/GUI/vial2").set_region_rect(Rect2(Vector2(0, 30-(player.blood_level-10)*3), Vector2(12,(player.blood_level-10)*3)))
-		get_node("Camera/GUI/vial2").set_offset(Vector2(0, 30-(player.blood_level-10)*3))
-		get_node("Camera/GUI/vial3").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
+		get_node("Camera/GUI/Sprite/vial1").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
+		get_node("Camera/GUI/Sprite/vial2").set_region_rect(Rect2(Vector2(0, 30-(player.blood_level-10)*3), Vector2(12,(player.blood_level-10)*3)))
+		get_node("Camera/GUI/Sprite/vial2").set_offset(Vector2(0, 30-(player.blood_level-10)*3))
+		get_node("Camera/GUI/Sprite/vial3").set_region_rect(Rect2(Vector2(), Vector2(12,1)))
 	elif (player.blood_level <=30):
-		get_node("Camera/GUI/vial1").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
-		get_node("Camera/GUI/vial2").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
-		get_node("Camera/GUI/vial3").set_offset(Vector2(0, 30-(player.blood_level-20)*3))
-		get_node("Camera/GUI/vial3").set_region_rect(Rect2(Vector2(0, 30-(player.blood_level-20)*3), Vector2(12,(player.blood_level-20)*3)))
+		get_node("Camera/GUI/Sprite/vial1").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
+		get_node("Camera/GUI/Sprite/vial2").set_region_rect(Rect2(Vector2(), Vector2(12,31)))
+		get_node("Camera/GUI/Sprite/vial3").set_offset(Vector2(0, 30-(player.blood_level-20)*3))
+		get_node("Camera/GUI/Sprite/vial3").set_region_rect(Rect2(Vector2(0, 30-(player.blood_level-20)*3), Vector2(12,(player.blood_level-20)*3)))
 	else:
 		player.blood_level = 30
 	if (player.current_rounds>=1):
-		get_node("Camera/GUI/bullet").show()
+		get_node("Camera/GUI/Sprite/bullet").show()
 	else:
-		get_node("Camera/GUI/bullet").hide()
+		get_node("Camera/GUI/Sprite/bullet").hide()
 
-	get_node("Camera/GUI/bullet1").set_region_rect(Rect2(Vector2(-player.current_rounds, 27-(player.current_rounds-1)*4), Vector2(16+player.current_rounds,(player.current_rounds-1)*4)))
+	get_node("Camera/GUI/Sprite/bullet1").set_region_rect(Rect2(Vector2(-player.current_rounds, 27-(player.current_rounds-1)*4), Vector2(16+player.current_rounds,(player.current_rounds-1)*4)))
+	
+	get_node("Camera/GUI/Sprite/pts_label").set_text(str("Hektolitry wylanej krwii: ", blood_liters))
+	
+	if (player.can_spell(1)):
+		spell_1_active.show()
+	else:
+		spell_1_active.hide()
+		
+	if (player.can_spell(2)):
+		spell_2_active.show()
+	else:
+		spell_2_active.hide()
+		
+	if (player.can_spell(3)):
+		spell_3_active.show()
+	else:
+		spell_3_active.hide()
 	
 	var tex = get_node("Camera/GUI").get_render_target_texture()
 	get_node("Camera/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
@@ -83,6 +105,11 @@ func _ready():
 	bg_sprite1 = get_node("background/sprite")
 	bg_sprite2 = get_node("background/sprite1")
 	player = get_node("Player")
+
+	spell_1_active = get_node("Camera/GUI/Sprite/spell_1_inactive/spell_1_active")
+	spell_2_active = get_node("Camera/GUI/Sprite/spell_2_inactive/spell_2_active")
+	spell_3_active = get_node("Camera/GUI/Sprite/spell_3_inactive/spell_3_active")
+
 	randomize()
 #	spawner()
 	pass
@@ -108,6 +135,8 @@ func add_blood_splatter(pos):
 	blood.set_frame(round(rand_range(2,8)))
 	get_node("blood").add_child(blood)
 	
+	blood_liters += .5
+	
 func add_blood_particle(pos):
 	pos.y+=5
 	for i in range(3):
@@ -117,7 +146,7 @@ func add_blood_particle(pos):
 		get_node("blood").add_child(blood)
 		
 func shootGUI():
-	get_node("Camera/GUI/explode/AnimationPlayer").play("shoot")
+	get_node("Camera/GUI/Sprite/explode/AnimationPlayer").play("shoot")
 	
 func spawner():
 	var localr_nr = round(rand_range(0,2))

@@ -234,17 +234,20 @@ func process_input():
 		gun_timeout = .2
 	
 	if (btn_3 == 1 && can_spell(3)):
+		blood_level -= spell_3_cost
 		create_kameha()
 		kameha_timeout = 3 #10
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 	
 	if (btn_2 == 1 && can_spell(2)):
+		blood_level -= spell_2_cost
 		create_hand()
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
 		
 	if (btn_1 == 1 && can_spell(1)):
+		blood_level -= spell_1_cost
 		bullet_to_spawn = 4
 		create_spermaskull()
 		spawn_bullet_timeout = .2
@@ -324,15 +327,12 @@ func add_blood():
 	
 func can_spell(which_spell):
 	if(which_spell == 1 && blood_level >= spell_1_cost):
-		blood_level -= spell_1_cost
 		return true
 		
 	if(which_spell == 2 && blood_level >= spell_2_cost):
-		blood_level -= spell_2_cost
 		return true
 		
 	if(which_spell == 3 && blood_level >= spell_3_cost):
-		blood_level -= spell_3_cost
 		return true
 	
 	return false
