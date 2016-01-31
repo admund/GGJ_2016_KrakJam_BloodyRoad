@@ -24,6 +24,8 @@ var spell_1_active = null
 var spell_2_active = null
 var spell_3_active = null
 
+var show_end_dialog = false
+
 func restart():
 	get_parent().restart(self)
 
@@ -86,7 +88,7 @@ func _fixed_process(delta):
 
 	get_node("Camera/GUI/Sprite/bullet1").set_region_rect(Rect2(Vector2(-player.current_rounds, 27-(player.current_rounds-1)*4), Vector2(16+player.current_rounds,(player.current_rounds-1)*4)))
 	
-	get_node("Camera/GUI/Sprite/pts_label").set_text(str("Hektolitry wylanej krwii: ", blood_liters))
+	get_node("Camera/GUI/Sprite/pts_label").set_text(str("Blood-o-meter: ", blood_liters, " liters ]:>"))
 	
 	if (player.can_spell(1)):
 		spell_1_active.show()
@@ -105,6 +107,13 @@ func _fixed_process(delta):
 	
 	var tex = get_node("Camera/GUI").get_render_target_texture()
 	get_node("Camera/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
+	
+	if (player.current_hp <= 0 && !show_end_dialog):
+		var endDialog = get_node("Camera/GUI/Sprite/end_dialog")
+#		endDialog.get_node("AnimationPlayer").play("show")
+		endDialog.show()
+		get_node("Camera/GUI/Sprite/press_p_label").show()
+	
 	pass
 	
 func _ready():
@@ -142,7 +151,8 @@ func add_blood_splatter(pos):
 	blood.set_frame(round(rand_range(2,8)))
 	get_node("blood").add_child(blood)
 	
-	blood_liters += .5
+	if(player.current_hp > 0):
+		blood_liters += .5
 	
 func add_bloow_particles(pos):
 	pos.y+=5

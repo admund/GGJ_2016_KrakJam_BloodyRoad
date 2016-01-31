@@ -101,7 +101,7 @@ var biting_enemies = 0
 var MAX_ROUNDS = 8
 var current_rounds = 8
 var blood_level = 0
-var blood_rage  = 60
+var blood_rage  = 0#60
 var blood_rage_on = false
 var spell_1_cost = 10#100
 var spell_2_cost = 15#200
@@ -555,10 +555,23 @@ func try_hit_enemies():
 func _on_player_hit_box_area_enter( area ):
 	if (area.get_name() == "area_enemy"):
 		biting_enemies += 1
+		
+#	if(area.get_name() == "hydra_attack"):
+	if(area.has_node("hydra_attack")):
+#		print("hydra_attack enter")
+		current_hp -= 5
+		get_parent().add_blood_particle(get_translation())
+	
+#	print(str("enter ", area.get_name(), " ", area.has_node("hydra_attack")))
 	pass
-
 
 func _on_player_hit_box_area_exit( area ):
 	if (area.get_name() == "area_enemy"):
 		biting_enemies -= 1
+		
+#	if(area.get_name() == "hydra_attack"):
+#	if(area.has_node("hydra_attack")):
+#		print("hydra_attack exit")
+		
+#	print(str("exit ", area.get_name(), " ", area.has_node("hydra_attack")))
 	pass

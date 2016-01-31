@@ -2,7 +2,8 @@ extends KinematicBody
 
 ### import the input helper class
 var enemy_states = preload("enemy_states.gd")
-var hydralisk_atack = preload("res://scenes/hydralisk_atack.scn")
+#var hydralisk_atack = preload("res://scenes/hydralisk_atack.scn")
+var hydralisk_atack = preload("res://scenes/hydra_attack.scn")
 var states       = enemy_states.new()
 
 var type         = 0
@@ -173,7 +174,7 @@ func attack ( delta ):
 		var atack = hydralisk_atack.instance()
 		atack.set_translation(jump_start + Vector3(jump_target * jump_interpolation * 10,0,0))
 		if (jump_target>0):
-			atack.set_flip_h(jump_target)
+			atack.get_node("atack").set_flip_h(jump_target)
 		get_node("../../hydralisk_atacks").add_child(atack)
 		
 	timer += delta
