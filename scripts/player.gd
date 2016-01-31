@@ -318,6 +318,7 @@ func decrese_timeouts(delta):
 		reload_timeout -= delta
 		if (reload_timeout < 0 && current_rounds < MAX_ROUNDS):
 			current_rounds += 1
+			get_node("SamplePlayer").play("reload")
 			if (current_rounds < MAX_ROUNDS):
 				reload_timeout = 1.5
 			
@@ -411,10 +412,12 @@ func create_hand():
 	
 func create_gun_bullet():
 	if (current_rounds > 0):
+		get_node("SamplePlayer").play("shot")
 		current_rounds -= 1
 		if(reload_timeout < 0):
 			reload_timeout = 1.5
 	else:
+		get_node("SamplePlayer").play("click")
 		return
 	
 	var gun_bullet = gun_bullet_prototype.instance()
@@ -521,6 +524,7 @@ func _on_player_sword_area_exit( area ):
 	pass
 	
 func try_hit_enemies():
+	get_node("SamplePlayer").play("sword")
 	var enemies_node = get_node("../enemies")
 	for child in enemies_node.get_children():
 		child.sword_hit(get_node("player_sword").get_translation() + get_translation())
