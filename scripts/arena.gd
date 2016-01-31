@@ -63,7 +63,8 @@ func _fixed_process(delta):
 			fade_out_start = true
 	else:
 		if (timeout > 4):
-			enemy.blow()
+			if(enemy != null):
+				enemy.blow()
 		
 	if (timeout > 4):
 		queue_free()

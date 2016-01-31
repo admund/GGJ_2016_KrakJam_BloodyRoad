@@ -37,7 +37,6 @@ func _fixed_process(delta):
 		get_node("area_enemy/Sprite").set_flip_h(false)
 		orientation = -1
 
-
 	move_vector = Vector3()
 	if (hp<=0):
 		next_state = states.die
@@ -51,8 +50,8 @@ func _fixed_process(delta):
 		walk ( delta )
 	elif ( current_state == states.attack ):
 		attack( delta )
-	elif ( current_state == states.chase ):
-		chase( delta )
+	elif ( current_state == states.wait ):
+		wait( delta )
 	elif ( current_state == states.run ):
 		run( delta )
 	elif ( current_state == states.jump ):
@@ -68,8 +67,7 @@ func _fixed_process(delta):
 	elif ( current_state == states.delete ):
 		delete( delta )
 	elif ( current_state == states.freeze ):
-		freeze( delta )
-	
+		freeze( delta )	
 	self.move( move_vector+hit_vector )
 	hit_vector *=0.9
 #	hit_vector = Vector3()
@@ -82,7 +80,6 @@ func _fixed_process(delta):
 func _ready():
 	set_fixed_process(true)
 	current_state     = states.idle
-	label             = get_node("area_enemy/Viewport/Label")
 	player            = get_node("../../Player")
 	animation         = get_node("area_enemy/Sprite/AnimationPlayer")
 	pass
@@ -102,29 +99,33 @@ func idle ( delta ):
 	if (abs(new_move_vector.z)>=2):
 		if(animation.get_current_animation()!= "walk"):
 			animation.play("walk")
+			
 		var temp = Vector2(0, new_move_vector.z ).normalized()
 		move_vector.x = 0
-		move_vector.z = temp.y * 0.2
+		move_vector.z = temp.y * 0.1
 		get_node("Particles").set_emitting(true)
 		get_node("Particles1").set_emitting(true)
+		get_node("Particles2").set_emitting(true)
 
 	else:
 		if(animation.get_current_animation()!= "idle"):
 			animation.play("idle")
 		timer += delta
 		var local_length = (player.get_translation() - self.get_translation()).length()
-		if ( timer >= 1 or local_length<10):
-			var local_length = (player.get_translation() - self.get_translation()).length()
+		if ( timer >= 3 or local_length<10):
+#			var local_length = (player.get_translation() - self.get_translation()).length()
 			if (local_length<10):
 				next_state = states.attack
 			elif(local_length>=10 and local_length<30):
 				next_state = states.walk
-			elif(local_length>=30 and local_length<50):
-				next_state = states.jump
 			else:
 				next_state = states.run
-	label.set_text("idle")
 	pass
+	
+func freeze ( delta ):
+	is_freeze = true
+	pass
+	
 func walk ( delta ):
 	if (current_state != prev_state):
 		jump_start         = get_translation()
@@ -132,7 +133,7 @@ func walk ( delta ):
 		jump_target        = Vector3(jump_target.x -sign(jump_target.x)*4, 0 ,jump_target.z)
 		jump_interpolation = 0
 		jump_timer         = 0
-		jump_duration      = 0.6  #jump_target.length()/jump_target.length()
+		jump_duration      = 1  
 	else:
 		if(animation.get_current_animation()!= "walk"):
 			animation.play("walk")
@@ -146,7 +147,6 @@ func walk ( delta ):
 		move_vector = step_target - local_position
 		if (jump_timer >=jump_duration):
 			next_state = states.idle
-	label.set_text("walk")
 	pass
 	
 func attack ( delta ):
@@ -160,73 +160,45 @@ func attack ( delta ):
 	if (timer >=1):
 		next_state = states.idle
 		
-	label.set_text("attack")
 	pass
+func wait( delta ):
+	if (current_state != prev_state):
+		timer = 0
+		
+	if(animation.get_current_animation()!= "attack"):
+		animation.play("attack")
 	
-func chase ( delta ):
-	
-	label.set_text("chase")
-	pass
-	
+	timer += delta
+	if (timer >=3):
+		next_state = states.idle
+		
+	pass	
 func run ( delta ):
 	if (current_state != prev_state):
 		jump_start         = get_translation()
 		jump_target        = jump_start + Vector3( orientation * 80,0,0)
 		jump_interpolation = 0
 		jump_timer         = 0
-		jump_duration      = (jump_target - jump_start).length()/50
+		jump_duration      = 1
+
 	else:
 		if(animation.get_current_animation()!= "run"):
 			animation.play("run")
-			
-		jump_timer += delta
-		jump_interpolation = jump_timer / jump_duration
+		get_node("Particles").set_emitting(true)
+		get_node("Particles1").set_emitting(true)
+		get_node("Particles2").set_emitting(true)
+		jump_timer += delta 
+		jump_interpolation = jump_timer  / jump_duration
+		
 		
 		var step_target = (1 - jump_interpolation) * jump_start + jump_interpolation * jump_target
 		var local_position = get_translation()
 		
 		move_vector = step_target - local_position
 		if (jump_timer >=jump_duration):
-			next_state = states.idle
-	label.set_text("run")
+			next_state = states.wait
 	pass
 	
-func jump ( delta ):
-	if (current_state != prev_state):
-		jump_start         = get_translation()
-		jump_target        = jump_start
-		jump_target.x     += orientation * 40
-		jump_interpolation = 0
-		jump_timer         = 0
-		jump_duration      = (jump_target - jump_start).length()/30
-#		animation.play("jump")
-	else:
-		if(animation.get_current_animation()!= "jump"):
-			animation.play("jump")
-			
-		jump_timer += delta
-		jump_interpolation = jump_timer / jump_duration
-		
-		var step_target = (1 - jump_interpolation) * jump_start + jump_interpolation * jump_target
-		var local_position = get_translation()
-		move_vector = step_target - local_position
-		jump_interpolation = jump_timer / jump_duration
-		get_node("area_enemy").set_translation( Vector3(0, sin(jump_interpolation*PI)*15, 0) ) 
-		jump_timer += delta
-		
-		if (jump_timer >=jump_duration):
-			next_state = states.idle
-			local_position.y = 0
-			if(animation.get_current_animation()!= "idle"):
-				animation.play("idle")
-				
-			get_node("area_enemy").set_translation( Vector3(0, 0, 0) ) 
-			get_node("Particles").set_emitting(true)
-			get_node("Particles1").set_emitting(true)
-			
-	
-	label.set_text("jump")
-	pass
 
 func sword_hit():
 	if (in_sword_range):
@@ -236,17 +208,11 @@ func sword_hit():
 func hit ( hit_location ):
 	get_parent().get_parent().add_blood_particle(get_translation())
 	var local_hit_vector = (hit_location-get_translation())
-#	local_hit_vector.y = 0
-	hit_vector -= local_hit_vector.normalized()*2
+	local_hit_vector.y = 0
+	local_hit_vector.z = 0
+	hit_vector -= local_hit_vector.normalized()*0.5
 	pass
 	
-func falling ( delta ):
-	label.set_text("falling")
-	pass
-	
-func on_ground ( delta ):
-	label.set_text("on_ground")
-	pass
 	
 func die ( delta ):
 	if (current_state != prev_state):
@@ -257,7 +223,7 @@ func die ( delta ):
 
 		jump_start         = get_translation()
 		jump_target        = jump_start 
-		jump_target.x      -= orientation * 20
+		jump_target.x      -= orientation * 5
 		
 	timer += delta
 	
@@ -267,7 +233,7 @@ func die ( delta ):
 		var local_position = get_translation()
 		var local_positiom_y = get_node("area_enemy").get_translation().y
 		move_vector = step_target - local_position
-		get_node("area_enemy").set_translation( Vector3(0, (1-timer) * local_positiom_y + sin(timer*PI)*10, 0) ) 
+		get_node("area_enemy").set_translation( Vector3(0, (1-timer) * local_positiom_y + sin(timer*PI), 0) ) 
 		
 	elif (timer>1 and timer<2):
 		get_node("area_enemy").set_translation( Vector3(0, 0, 0) ) 
@@ -276,11 +242,10 @@ func die ( delta ):
 	elif (timer>=2):
 		delete(delta)
 	
-	label.set_text("die")
 	pass
 	
-func freeze ( delta ):
-	is_freeze = true
+func blow():
+	# ROZPIERDOL
 	pass
 	
 func delete ( delta ):
@@ -300,8 +265,5 @@ func _on_Area_body_enter( body ):
 		hp-=50
 		hit(body.get_translation())
 
-	pass
 
-func blow():
-	# TODO tu zrobic rozpierdol :)
 	pass

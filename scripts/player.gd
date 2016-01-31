@@ -93,7 +93,8 @@ var bullet_to_spawn = 0
 var current_hp = 1000
 var biting_enemies = 0
 
-# blood
+# bloodv
+var current_rounds = 8
 var blood_level = 0
 var spell_1_cost = 0#100
 var spell_2_cost = 0#200

@@ -10,6 +10,8 @@ var end_sprite = null
 var orientation = 0
 var colider = null
 
+var start_emiting =true
+
 func _ready():
 	set_fixed_process(true)
 	anim_sprite   = get_node("anim_sprite")
@@ -31,6 +33,9 @@ func _fixed_process(delta):
 	timeout += delta
 	
 	if ( timeout > 1 and timeout < 3 ):
+		if (start_emiting):
+			get_node("kameha/Particles").set_emitting(true)
+			start_emiting = false
 		
 		if (orientation):
 			middle_sprite.set_scale(Vector3((1-timeout)*3,1,1))
@@ -44,7 +49,7 @@ func _fixed_process(delta):
 		middle_sprite.set_modulate( local_color )
 		end_sprite.set_modulate( local_color )
 		timeout += delta*2
-	if (timeout>=2):
+	if (timeout>=9):
 		queue_free()
 
 func set_orientation(new_orientation):
