@@ -5,7 +5,7 @@ var enemy_states = preload("enemy_states.gd")
 var states       = enemy_states.new()
 
 var type         = 0
-var hp           = 100
+var hp           = 160
 var move_vector  = Vector3( 0, 0 ,0 )
 var hit_vector   = Vector3()
 
@@ -67,7 +67,9 @@ func _fixed_process(delta):
 	elif ( current_state == states.delete ):
 		delete( delta )
 	elif ( current_state == states.freeze ):
-		freeze( delta )	
+		freeze( delta )
+	elif ( current_state == states.blow ):
+		blow_up( delta )
 	self.move( move_vector+hit_vector )
 	hit_vector *=0.9
 #	hit_vector = Vector3()
@@ -204,7 +206,7 @@ func sword_hit(sword_trans):
 	var result = sword_trans - get_translation()
 #	if (in_sword_range):
 	if (result.length() < 10):
-		hp-=20
+		hp-=16 + (player.blood_rage_on * 4)*16
 		hit ( player.get_translation())
 
 func hit ( hit_location ):
@@ -247,8 +249,20 @@ func die ( delta ):
 	pass
 	
 func blow():
-	is_freeze = false
-	delete(1)
+	next_state = states.blow
+	pass
+	
+func blow_up(delta):
+	if (current_state != prev_state):
+		timer = 0
+	get_node("area_enemy/Sprite").translate(Vector3(0,0.01,0.01))
+		
+	timer+=delta
+	if (timer>=1):
+		get_parent().get_parent().add_bloow_particles(get_translation())
+		player.current_hp+=50
+		is_freeze = false
+		delete(1)
 	pass
 	
 func delete ( delta ):
@@ -261,21 +275,21 @@ func _on_Area_body_enter( body ):
 #	hit_vector = Vector3()
 #	hit_vector = Vector3()
 	if (body.has_node("bullet_type")):
-		hp-=10
+		hp-=32
 #		hit_vector += body.velocity
 		hit(body.get_translation())
 		body.delete()
 		return
 		
 	if (body.has_node("gun_bullet_type")):
-		hp-=5
+		hp-=10
 #		hit_vector += body.velocity
 		hit(body.get_translation())
 		body.delete()
 		return
 
 	if (body.get_name()=="kameha"):
-		hp-=50
+		hp-=120
 		hit(body.get_translation())
 		return
 

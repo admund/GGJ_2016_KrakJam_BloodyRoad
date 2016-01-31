@@ -15,6 +15,7 @@ var blood_splatters_count = 0
 
 var sprite_pentagram = null
 var sprite_hand = null
+var sprite_hand_blow = null
 
 var enemy = null
 var type = TYPE_PENTAGRAM
@@ -28,13 +29,18 @@ func _ready():
 	
 	sprite_pentagram = get_node("pentagram")
 	sprite_hand = get_node("hand")
+	sprite_hand_blow = get_node("hand1")
 	
 	if(type == TYPE_PENTAGRAM):
 		sprite_pentagram.show()
 		sprite_hand.hide()
+		sprite_hand_blow.hide()
+		get_node("blink").hide()
 	else:
 		sprite_pentagram.hide()
 		sprite_hand.show()
+		get_node("blink").show()
+		sprite_hand_blow.show()
 		
 	if (enemy != null):
 		enemy.blow()

@@ -53,7 +53,14 @@ func _fixed_process(delta):
 		sum_xp=narrator_xp*0.2
 		spawner()
 	
+	if (player.current_hp >=216):
+		player.current_hp = 216
 	get_node("Camera/GUI/hp").set_region_rect(Rect2(Vector2(), Vector2(player.current_hp,11)))
+	get_node("Camera/GUI/Sprite/micz").set_region_rect(Rect2(Vector2(), Vector2(44+player.blood_rage,44)))
+	if (player.blood_rage_on):
+		get_node("Camera/GUI/Sprite/rampage").show()
+	else:
+		get_node("Camera/GUI/Sprite/rampage").hide()
 	
 	if (player.blood_level <=10):
 		get_node("Camera/GUI/Sprite/vial1").set_region_rect(Rect2(Vector2(0, 30-player.blood_level*3), Vector2(12,player.blood_level*3)))
@@ -137,6 +144,16 @@ func add_blood_splatter(pos):
 	
 	blood_liters += .5
 	
+func add_bloow_particles(pos):
+	pos.y+=5
+	for i in range(10):
+		var blood = blood_particles_prototype.instance()
+		blood.set_translation(pos+Vector3(0,1,1))
+		blood.get_node("Sprite3D").set_frame(round(rand_range(0,7)))
+		blood.set_linear_velocity(Vector3(rand_range(-5,5),rand_range(15,35),rand_range(-5,5)))
+		get_node("blood").add_child(blood)
+		player.add_rage()
+	
 func add_blood_particle(pos):
 	pos.y+=5
 	for i in range(3):
@@ -144,6 +161,7 @@ func add_blood_particle(pos):
 		blood.set_translation(pos)
 		blood.set_linear_velocity(Vector3(rand_range(-15,15),rand_range(5,15),rand_range(-15,15)))
 		get_node("blood").add_child(blood)
+		player.add_rage()
 		
 func shootGUI():
 	get_node("Camera/GUI/Sprite/explode/AnimationPlayer").play("shoot")

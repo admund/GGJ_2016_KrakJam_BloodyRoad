@@ -69,20 +69,15 @@ func _fixed_process(delta):
 		delete( delta )
 	elif ( current_state == states.freeze ):
 		freeze( delta )
+	elif ( current_state == states.blow ):
+		blow_up( delta )
 	
 	self.move( move_vector+hit_vector )
 	hit_vector *=0.9
-#	hit_vector = Vector3()
-	
-	var tex = get_node("area_enemy/Viewport").get_render_target_texture()
-	get_node("area_enemy/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
-	get_node("area_enemy/Viewport/Sprite1").set_scale(Vector2(hp,1))
-
 	
 func _ready():
 	set_fixed_process(true)
 	current_state     = states.idle
-	label             = get_node("area_enemy/Viewport/Label")
 	player            = get_node("../../Player")
 	animation         = get_node("area_enemy/Sprite/AnimationPlayer")
 	pass
@@ -123,7 +118,6 @@ func idle ( delta ):
 				next_state = states.jump
 			else:
 				next_state = states.run
-	label.set_text("idle")
 	pass
 func walk ( delta ):
 	if (current_state != prev_state):
@@ -146,7 +140,6 @@ func walk ( delta ):
 		move_vector = step_target - local_position
 		if (jump_timer >=jump_duration):
 			next_state = states.idle
-	label.set_text("walk")
 	pass
 	
 func attack ( delta ):
@@ -159,13 +152,6 @@ func attack ( delta ):
 	timer += delta
 	if (timer >=1):
 		next_state = states.idle
-		
-	label.set_text("attack")
-	pass
-	
-func chase ( delta ):
-	
-	label.set_text("chase")
 	pass
 	
 func run ( delta ):
@@ -188,7 +174,6 @@ func run ( delta ):
 		move_vector = step_target - local_position
 		if (jump_timer >=jump_duration):
 			next_state = states.idle
-	label.set_text("run")
 	pass
 	
 func jump ( delta ):
@@ -223,16 +208,12 @@ func jump ( delta ):
 			get_node("area_enemy").set_translation( Vector3(0, 0, 0) ) 
 			get_node("Particles").set_emitting(true)
 			get_node("Particles1").set_emitting(true)
-			
-	
-	label.set_text("jump")
 	pass
 
 func sword_hit(sword_trans):
 	var result = sword_trans - get_translation()
-#	if (in_sword_range):
 	if (result.length() < 10):
-		hp-=20
+		hp-=20 + (player.blood_rage_on * 4)*20
 		hit ( player.get_translation())
 
 func hit ( hit_location ):
@@ -243,13 +224,6 @@ func hit ( hit_location ):
 	hit_vector -= local_hit_vector.normalized()*2
 	pass
 	
-func falling ( delta ):
-	label.set_text("falling")
-	pass
-	
-func on_ground ( delta ):
-	label.set_text("on_ground")
-	pass
 	
 func die ( delta ):
 	if (current_state != prev_state):
@@ -279,7 +253,6 @@ func die ( delta ):
 	elif (timer>=2):
 		delete(delta)
 	
-	label.set_text("die")
 	pass
 	
 func freeze ( delta ):
@@ -287,8 +260,20 @@ func freeze ( delta ):
 	pass
 	
 func blow():
-	is_freeze = false
-	delete(1)
+	next_state = states.blow
+	pass
+	
+func blow_up(delta):
+	if (current_state != prev_state):
+		timer = 0
+	get_node("area_enemy/Sprite").translate(Vector3(0,0.01,0.01))
+		
+	timer+=delta
+	if (timer>=1):
+		get_parent().get_parent().add_bloow_particles(get_translation())
+		player.current_hp+=50
+		is_freeze = false
+		delete(1)
 	pass
 	
 func delete ( delta ):
@@ -298,18 +283,14 @@ func delete ( delta ):
 	pass
 	
 func _on_Area_body_enter( body ):
-#	hit_vector = Vector3()
-#	hit_vector = Vector3()
 	if (body.has_node("bullet_type")):
-		hp-=10
-#		hit_vector += body.velocity
+		hp-=20
 		hit(body.get_translation())
 		body.delete()
 		return
 		
 	if (body.has_node("gun_bullet_type")):
-		hp-=5
-#		hit_vector += body.velocity
+		hp-=50
 		hit(body.get_translation())
 		body.delete()
 		return

@@ -12,4 +12,5 @@ var on_ground = 8
 var die       = 10
 var delete    = 11
 var freeze    = 12
-var wait    = 13
+var wait      = 13
+var blow      = 14

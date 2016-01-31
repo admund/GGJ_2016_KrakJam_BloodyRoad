@@ -57,7 +57,7 @@ var btn_restart = null
 
 var is_in_buff_area = buff_area_types.NONE
 
-var player_jump_hight = .7
+var player_jump_hight = 15
 var player_top_speed_vert = .3;
 var player_top_speed_hori = .6;
 var move_vector         = Vector3( 0, 0 ,0 )
@@ -101,6 +101,8 @@ var biting_enemies = 0
 var MAX_ROUNDS = 8
 var current_rounds = 8
 var blood_level = 0
+var blood_rage  = 60
+var blood_rage_on = false
 var spell_1_cost = 10#100
 var spell_2_cost = 15#200
 var spell_3_cost = 30#400
@@ -125,15 +127,13 @@ func _fixed_process(delta):
 		player_swor_area.set_translation(Vector3(-4, trans.y, trans.z))
 	
 	# powrot do "trans.y = 0" po skakaniu
-	if(current_state != STATE_JUMP && get_translation().y != 0 ):
-		var trans = get_translation()
-		set_translation(Vector3(trans.x, 0, trans.z))
+#	if(current_state != STATE_JUMP && get_translation().y != 0 ):
+#		var trans = get_translation()
+#		set_translation(Vector3(trans.x, 0, trans.z))
 	
-	elif(throw_cast_timeout < 0 && attack_timeout < 0 && gun_timeout < 0 && current_state != STATE_SHOOTING):
+	if(throw_cast_timeout < 0 && attack_timeout < 0 && gun_timeout < 0 && current_state != STATE_SHOOTING):
 		self.move( move_vector )
-		if (current_state == STATE_JUMP):
-			var trans = sprite_shadow.get_translation()
-			sprite_shadow.set_translation(Vector3(trans.x, -get_translation().y, trans.z))
+
 
 	biting()
 	
@@ -141,6 +141,20 @@ func _fixed_process(delta):
 		bullet_to_spawn -= 1
 		create_spermaskull()
 		spawn_bullet_timeout = .2
+		
+	if (blood_rage>100):
+		blood_rage_on = true
+		
+	if (blood_rage_on==true):
+		blood_rage -= 0.1
+		current_hp += 0.2
+		if (blood_rage<=1):
+			blood_rage_on = false
+		
+
+func add_rage():
+	if(blood_rage_on == false):
+		blood_rage += 0.5
 
 func _ready():
 	set_fixed_process(true)
@@ -211,7 +225,10 @@ func process_input():
 		
 		
 	if(current_state == STATE_JUMP):
-		move_vector = Vector3(move_vector.x, cos((1 - jump_timeout) * PI) * player_jump_hight, move_vector.z)
+		if(jump_timeout>0):
+			move_vector = Vector3(move_vector.x, (sin((1-jump_timeout) * PI) * player_jump_hight)-get_translation().y, move_vector.z)
+			var trans = sprite_shadow.get_translation()
+			sprite_shadow.set_translation(Vector3(0, trans.y-move_vector.y, 0))
 		
 	if (is_idle_or_running()):
 		if (move):
@@ -306,6 +323,9 @@ func decrese_timeouts(delta):
 	if(jump_timeout > 0):
 		jump_timeout -= delta
 		if(jump_timeout < 0):
+			set_translation(Vector3(get_translation().x, 0, get_translation().z))
+			sprite_shadow.set_translation(Vector3(0, 0, 0))
+			jump_timeout
 			change_state(STATE_IDLE)
 				
 	if(kameha_timeout > 0 && is_in_buff_area != buff_area_types.NONE):
