@@ -73,6 +73,7 @@ var sprite_casting = null
 var sprite_sword_1 = null
 var sprite_sword_2 = null
 var sprite_gun = null
+var sprite_explosion = null
 var sprite_shadow = null
 
 var player_swor_area = null
@@ -87,6 +88,7 @@ var attack_timeout = -1
 var bitting_timeout = -1
 var gun_timeout = -1
 var shooting_timeout = -1
+var reload_timeout = -1
 
 var spawn_bullet_timeout = -1
 var bullet_to_spawn = 0
@@ -96,6 +98,7 @@ var current_hp = 216
 var biting_enemies = 0
 
 # bloodv
+var MAX_ROUNDS = 8
 var current_rounds = 8
 var blood_level = 0
 var spell_1_cost = 10#100
@@ -155,6 +158,7 @@ func _ready():
 	sprite_sword_1  = get_node("sprite_sword_1")
 	sprite_sword_2  = get_node("sprite_sword_2")
 	sprite_gun  	= get_node("sprite_gun")
+	sprite_explosion= get_node("sprite_gun_explosion")
 	sprite_shadow  = get_node("shadow")
 	
 	player_swor_area = get_node("player_sword")
@@ -309,6 +313,14 @@ func decrese_timeouts(delta):
 		
 	if(bitting_timeout > 0):
 		bitting_timeout -= delta
+		
+	if(reload_timeout > 0 && current_state != STATE_SHOOTING):
+		reload_timeout -= delta
+		if (reload_timeout < 0 && current_rounds < MAX_ROUNDS):
+			current_rounds += 1
+			if (current_rounds < MAX_ROUNDS):
+				reload_timeout = 1.5
+			
 
 func set_is_in_buff_area(buff_area_type):
 	is_in_buff_area = buff_area_type
@@ -398,6 +410,13 @@ func create_hand():
 	pass
 	
 func create_gun_bullet():
+	if (current_rounds > 0):
+		current_rounds -= 1
+		if(reload_timeout < 0):
+			reload_timeout = 1.5
+	else:
+		return
+	
 	var gun_bullet = gun_bullet_prototype.instance()
 	
 	var multi = 0
@@ -412,6 +431,9 @@ func create_gun_bullet():
 	shell.set_translation(self.get_translation() + Vector3(4.5*multi, 13.3+rand_range(-1,1), 0))
 	shell_node.add_child(shell)
 	
+	sprite_explosion.get_node("AnimationPlayer").play("anim")
+	sprite_explosion.set_translation(Vector3(5*multi, 13.3+rand_range(-1,1), 0))
+	
 	gun_bullet.set_translation(self.get_translation() + Vector3(4*multi,13.3,0))
 	var bullet_velocity_x = 0
 	if orientation == 0:
@@ -419,7 +441,7 @@ func create_gun_bullet():
 	else:
 		bullet_velocity_x = -1.8
 	
-	gun_bullet.velocity = Vector3(bullet_velocity_x,0,0)
+	gun_bullet.velocity = Vector3(bullet_velocity_x,rand_range(-0.2,0),0)
 	gun_bullet.get_node("Sprite3D").set_flip_h(orientation)
 	gun_bullets_node.add_child(gun_bullet)
 	pass
