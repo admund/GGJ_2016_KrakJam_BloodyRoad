@@ -4,7 +4,6 @@ var prev_state
 var current_state
 var input
 
-
 var output_state
 var state_old
 

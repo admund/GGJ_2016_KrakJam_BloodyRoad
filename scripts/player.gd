@@ -5,6 +5,9 @@ var STATE_RUNNING = 1
 var STATE_JUMP = 2
 var STATE_CASTING = 3
 var STATE_ATTACK = 4
+var STATE_START_SHOOTING = 5
+var STATE_SHOOTING = 6
+var STATE_END_SHOOTING = 7
 
 ### import the input helper class
 var input_states = preload("input_states.gd")
@@ -17,6 +20,7 @@ var state_right = input_states.new("right")
 var state_jump  = input_states.new("jump")
 var state_shoot = input_states.new("shoot")
 var state_attack= input_states.new("attack")
+var state_penta = input_states.new("penta")
 var state_1     = input_states.new("1")
 var state_2     = input_states.new("2")
 var state_3     = input_states.new("3")
@@ -24,6 +28,9 @@ var state_3     = input_states.new("3")
 ################################3
 var bullet_prototype = preload("res://scenes/bullet.scn")
 var bullets_node = null
+
+var gun_bullet_prototype = preload("res://scenes/gun_bullet.scn")
+var gun_bullets_node = null
 
 var buff_area_prototype = preload("res://scenes/arena.scn")
 var buff_area_types = preload("buff_area_type.gd").new()
@@ -41,6 +48,7 @@ var btn_right   = null
 var btn_jump    = null
 var btn_attack  = null
 var btn_shoot   = null
+var btn_penta   = null
 var btn_1       = null
 var btn_2       = null
 var btn_3       = null
@@ -62,6 +70,7 @@ var sprite_jump = null
 var sprite_casting = null
 var sprite_sword_1 = null
 var sprite_sword_2 = null
+var sprite_gun = null
 var sprite_shadow = null
 
 var player_swor_area = null
@@ -74,6 +83,8 @@ var throw_cast_timeout = -1
 var bullet_timeout = -1
 var attack_timeout = -1
 var bitting_timeout = -1
+var gun_timeout = -1
+var shooting_timeout = -1
 
 var spawn_bullet_timeout = -1
 var bullet_to_spawn = 0
@@ -84,9 +95,9 @@ var biting_enemies = 0
 
 # blood
 var blood_level = 0
-var spell_1_cost = 100
-var spell_2_cost = 200
-var spell_3_cost = 400
+var spell_1_cost = 0#100
+var spell_2_cost = 0#200
+var spell_3_cost = 0#400
 
 # func
 func _fixed_process(delta):
@@ -99,6 +110,7 @@ func _fixed_process(delta):
 	sprite_casting.set_flip_h(orientation)
 	sprite_sword_1.set_flip_h(orientation)
 	sprite_sword_2.set_flip_h(orientation)
+	sprite_gun.set_flip_h(orientation)
 	
 	var trans = player_swor_area.get_translation()
 	if (orientation == 0):
@@ -111,7 +123,7 @@ func _fixed_process(delta):
 		var trans = get_translation()
 		set_translation(Vector3(trans.x, 0, trans.z))
 	
-	elif(throw_cast_timeout < 0 && attack_timeout < 0):
+	elif(throw_cast_timeout < 0 && attack_timeout < 0 && gun_timeout < 0 && current_state != STATE_SHOOTING):
 		self.move( move_vector )
 		if (current_state == STATE_JUMP):
 			var trans = sprite_shadow.get_translation()
@@ -121,8 +133,8 @@ func _fixed_process(delta):
 	
 	if(bullet_to_spawn > 0 && spawn_bullet_timeout < 0):
 		bullet_to_spawn -= 1
-		create_bullet()
-		spawn_bullet_timeout = .3
+		create_spermaskull()
+		spawn_bullet_timeout = .2
 
 func _ready():
 	set_fixed_process(true)
@@ -130,6 +142,7 @@ func _ready():
 	
 	shell_node      = get_node("../shells")
 	bullets_node    = get_node("../bullets")
+	gun_bullets_node= get_node("../gun_bullets")
 	buff_areas_node = get_node("../buff_areas")
 	
 	sprite_idle     = get_node("sprite_idle")
@@ -138,6 +151,7 @@ func _ready():
 	sprite_casting  = get_node("sprite_casting")
 	sprite_sword_1  = get_node("sprite_sword_1")
 	sprite_sword_2  = get_node("sprite_sword_2")
+	sprite_gun  	= get_node("sprite_gun")
 	sprite_shadow  = get_node("shadow")
 	
 	player_swor_area = get_node("player_sword")
@@ -151,6 +165,7 @@ func process_input():
 	btn_jump  = state_jump.check()
 	btn_shoot = state_shoot.check()
 	btn_attack = state_attack.check()
+	btn_penta = state_penta.check()
 	btn_1 =     state_1.check()
 	btn_2 =     state_2.check()
 	btn_3 =     state_3.check()
@@ -189,28 +204,39 @@ func process_input():
 		else:
 			change_state(STATE_IDLE)
 		
-	if (btn_shoot == 1 && buff_area_timeout < 0):
+	if (btn_penta == 1 && buff_area_timeout < 0):
 		create_buff_area(1)
 		buff_area_timeout = 4
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
+		
+	if (btn_shoot == 1):
+		change_state(STATE_START_SHOOTING)
+		sprite_gun.get_node("AnimationPlayer").play("fade_in")
+		gun_timeout = .2
+	
+	if (btn_shoot == 3):
+		change_state(STATE_END_SHOOTING)
+		sprite_gun.get_node("AnimationPlayer").play("fade_out")
+		gun_timeout = .2
 	
 	if (btn_3 == 1 && can_spell(3)):
-		create_hand()
-#		change_state(STATE_CASTING)
-		pass
-	
-	if (btn_2 == 1 && can_spell(2)):
 		create_kameha()
 		kameha_timeout = 3 #10
 		throw_cast_timeout = 1.5
 		change_state(STATE_CASTING)
+	
+	if (btn_2 == 1 && can_spell(2)):
+		create_hand()
+		throw_cast_timeout = 1.5
+		change_state(STATE_CASTING)
 		
 	if (btn_1 == 1 && can_spell(1)):
-		bullet_to_spawn = 2
-		create_bullet()
-#		bullet_timeout = .3
-		spawn_bullet_timeout = .3
+		bullet_to_spawn = 4
+		create_spermaskull()
+		spawn_bullet_timeout = .2
+		throw_cast_timeout = 1.0
+		change_state(STATE_CASTING)
 		
 	if (btn_attack == 1 && attack_timeout < 0):
 		change_state(STATE_ATTACK)
@@ -226,6 +252,23 @@ func decrese_timeouts(delta):
 		
 	if(spawn_bullet_timeout > 0):
 		spawn_bullet_timeout -= delta
+		
+	if(gun_timeout > 0):
+		gun_timeout -= delta
+		if(gun_timeout < 0):
+			if(current_state == STATE_START_SHOOTING):
+				change_state(STATE_SHOOTING)
+				sprite_gun.get_node("AnimationPlayer").play("shooting")
+				create_gun_bullet()
+				shooting_timeout = .3
+			else:
+				change_state(STATE_IDLE)
+	
+	if(shooting_timeout > 0):
+		shooting_timeout -= delta
+		if (shooting_timeout < 0 && current_state == STATE_SHOOTING):
+			create_gun_bullet()
+			shooting_timeout = .3
 	
 	if(attack_timeout > 0):
 		attack_timeout -= delta
@@ -278,14 +321,15 @@ func can_spell(which_spell):
 	
 	return false
 	
-func create_bullet():
+func create_spermaskull():
 	var bullet = bullet_prototype.instance()
-	var shell = shell_prototype.instance()
 	
-	shell.set_angular_velocity(Vector3(rand_range(-0.1,0.1),rand_range(-0.1,0.1),rand_range(-0.1,0.1)))
-	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
-	shell.set_translation(self.get_translation() + Vector3(-5*orientation, 10+rand_range(-1,1), 0))
-	shell_node.add_child(shell)
+#	var shell = shell_prototype.instance()
+#	shell.set_angular_velocity(Vector3(rand_range(-0.1,0.1),rand_range(-0.1,0.1),rand_range(-0.1,0.1)))
+#	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
+#	shell.set_translation(self.get_translation() + Vector3(-5*orientation, 10+rand_range(-1,1), 0))
+#	shell_node.add_child(shell)
+	
 	bullet.set_translation(self.get_translation() + Vector3(0,10,0))
 	var bullet_velocity_x = 0
 	if orientation == 0:
@@ -343,6 +387,33 @@ func create_hand():
 		get_parent().add_blood_particle(enemy.get_translation())
 	pass
 	
+func create_gun_bullet():
+	var gun_bullet = gun_bullet_prototype.instance()
+	
+	var multi = 0
+	if(orientation == 1):
+		multi = -1
+	else:
+		multi = 1
+	
+	var shell = shell_prototype.instance()
+	shell.set_angular_velocity(Vector3(rand_range(-0.1,0.1),rand_range(-0.1,0.1),rand_range(-0.1,0.1)))
+	shell.set_linear_velocity(Vector3(rand_range(-2,2),rand_range(-4,0.5),rand_range(-0.5,0.5)))
+	shell.set_translation(self.get_translation() + Vector3(4.5*multi, 13.3+rand_range(-1,1), 0))
+	shell_node.add_child(shell)
+	
+	gun_bullet.set_translation(self.get_translation() + Vector3(4*multi,13.3,0))
+	var bullet_velocity_x = 0
+	if orientation == 0:
+		bullet_velocity_x = 1.8
+	else:
+		bullet_velocity_x = -1.8
+	
+	gun_bullet.velocity = Vector3(bullet_velocity_x,0,0)
+	gun_bullet.get_node("Sprite3D").set_flip_h(orientation)
+	gun_bullets_node.add_child(gun_bullet)
+	pass
+	
 func change_state(new_state):
 	current_state = new_state
 	if(new_state == STATE_IDLE):
@@ -352,6 +423,7 @@ func change_state(new_state):
 		sprite_casting.hide()
 		sprite_sword_1.hide()
 		sprite_sword_2.hide()
+		sprite_gun.hide()
 		
 	elif(new_state == STATE_RUNNING):
 		sprite_idle.hide()
@@ -360,6 +432,7 @@ func change_state(new_state):
 		sprite_casting.hide()
 		sprite_sword_1.hide()
 		sprite_sword_2.hide()
+		sprite_gun.hide()
 		
 	elif(new_state == STATE_JUMP):
 		sprite_idle.hide()
@@ -368,6 +441,7 @@ func change_state(new_state):
 		sprite_casting.hide()
 		sprite_sword_1.hide()
 		sprite_sword_2.hide()
+		sprite_gun.hide()
 		
 	elif(new_state == STATE_CASTING):
 		sprite_idle.hide()
@@ -376,18 +450,29 @@ func change_state(new_state):
 		sprite_casting.show()
 		sprite_sword_1.hide()
 		sprite_sword_2.hide()
+		sprite_gun.hide()
 		
 	elif(new_state == STATE_ATTACK):
 		sprite_idle.hide()
 		sprite_running.hide()
 		sprite_jump.hide()
 		sprite_casting.hide()
-		if(randi() % 2 == 0):
+		if(randi() % 4 != 0):
 			sprite_sword_1.show()
 			sprite_sword_2.hide()
 		else:
 			sprite_sword_1.hide()
 			sprite_sword_2.show()
+		sprite_gun.hide()
+		
+	elif(new_state == STATE_START_SHOOTING || new_state == STATE_SHOOTING || new_state == STATE_END_SHOOTING):
+		sprite_idle.hide()
+		sprite_running.hide()
+		sprite_jump.hide()
+		sprite_casting.hide()
+		sprite_sword_1.hide()
+		sprite_sword_2.hide()
+		sprite_gun.show()
 		
 
 func _on_player_sword_area_enter( area ):

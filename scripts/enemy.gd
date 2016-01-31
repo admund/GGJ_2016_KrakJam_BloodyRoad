@@ -113,7 +113,7 @@ func idle ( delta ):
 		timer += delta
 		var local_length = (player.get_translation() - self.get_translation()).length()
 		if ( timer >= 1 or local_length<10):
-#			var local_length = (player.get_translation() - self.get_translation()).length()
+			var local_length = (player.get_translation() - self.get_translation()).length()
 			if (local_length<10):
 				next_state = states.attack
 			elif(local_length>=10 and local_length<30):
