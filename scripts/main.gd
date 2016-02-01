@@ -109,6 +109,9 @@ func _fixed_process(delta):
 	get_node("Camera/Quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, tex)
 	
 	if (player.current_hp <= 0 && !show_end_dialog):
+		show_end_dialog = true
+		get_parent().get_node("SamplePlayer").stop_all()
+		get_parent().get_node("SamplePlayer").play("dead")
 		var endDialog = get_node("Camera/GUI/Sprite/end_dialog")
 #		endDialog.get_node("AnimationPlayer").play("show")
 		endDialog.show()
@@ -151,8 +154,8 @@ func add_blood_splatter(pos):
 	blood.set_frame(round(rand_range(2,8)))
 	get_node("blood").add_child(blood)
 	
-	if(player.current_hp > 0):
-		blood_liters += .52
+	if (player.current_hp>0):
+		blood_liters += .5
 	
 func add_bloow_particles(pos):
 	pos.y+=5

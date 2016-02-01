@@ -249,7 +249,7 @@ func process_input():
 		gun_timeout = .2
 	
 	if (btn_shoot == 3):# && current_state == STATE_SHOOTING):
-		print(str("state ", current_state))
+#		print(str("state ", current_state))
 		change_state(STATE_END_SHOOTING)
 		sprite_gun.get_node("AnimationPlayer").play("fade_out")
 		gun_timeout = .2

@@ -17,7 +17,7 @@ func _fixed_process(delta):
 			timer += delta
 		else:
 			music_play = 1
-			get_node("SamplePlayer").play("main_theme")
+			get_node("SamplePlayer").play("level")
 			timer = 0
 	
 	if (music_play ==1):
@@ -40,6 +40,8 @@ func _fixed_process(delta):
 	
 func restart(restarted_node):
 	remove_child(restarted_node)
+	get_node("SamplePlayer").stop_all()
+	get_node("SamplePlayer").play("level")
 	add_child(main_scene_protoptype.instance())
 
 func start():
